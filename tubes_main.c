@@ -33,10 +33,10 @@ int main(int argc, char *argv[]){
 
             print_info("Exiting manajemen debug mode...");
         } else {
-            printf( "Usage: \n"
+            printf( "Usage: ./tubes.bin <debug_mode>\n"
                     "+ message\t: Run message debug mode \n"
-                    "+ order\t\t: Run debug mode \n"
-                    "+ manajemen\t: Run debug mode \n"
+                    "+ order\t\t: Run order debug mode \n"
+                    "+ manajemen\t: Run manajemen debug mode \n"
                     "No argument: Run normal mode \n"
             );
         }
