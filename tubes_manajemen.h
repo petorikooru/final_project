@@ -1,0 +1,18 @@
+#ifndef MANAJEMEN_H
+#define MANAJEMEN_H
+
+#define MAX_USERS 100
+#define MAX_ORDERS 100
+#define MAX_LENGTH 100
+
+typedef struct {
+    char    username[MAX_LENGTH];
+    char    password[MAX_LENGTH];
+    int     orderCount;
+    char    orders[MAX_ORDERS][MAX_LENGTH];
+    char    orderStatus[MAX_ORDERS][MAX_LENGTH];
+} User;
+
+void manajemen_init();
+
+#endif
