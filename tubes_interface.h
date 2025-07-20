@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifndef TUI_H
 #define TUI_H
@@ -34,20 +35,18 @@
 #define WHT             "\e[37m"
 #define WHT_BG          "\e[47m"
 #define GRY             "\e[90m"
-#define GRY_BG          "\e[100m"
 #define PNK             "\e[91m"
-#define PNK_BG          "\e[101m"
 #define LME             "\e[92m"
-#define LME_BG          "\e[102m"
-#define RST             "\e[0m"
+#define RST             "\e[00m"
 
 /* ============= Cursor ============== */
 /*
     Cursor controls
 */
-#define SET_COLOR(color)        printf("%s", (color));
-#define SET_CURSOR(cursor)      printf("%s", (cursor));
-#define SET_OFFSET(x, y)        printf("\e[%d;%dH", (y), (x));
+#define SET_COLOR(color)        printf("%s", (color))
+#define SET_CURSOR(cursor)      printf("%s", (cursor))
+#define SET_OFFSET(x, y)        printf("\e[%d;%dH", (y), (x))
+#define SET_OFFSET_ERR(x,y)     fprintf(stderr, "\e[%d;%dH", (y), (x))
 
 #define CURSOR_UP       "\e[A"
 #define CURSOR_DOWN     "\n"
@@ -59,6 +58,90 @@
 #define CURSOR_START    "\r"
 #define CURSOR_HOME     "\e[H"
 
+typedef enum {
+    TITLE,
+    PLAIN,
+} box_t;
+
+typedef enum {
+    LEFT,
+    CENTER,
+    RIGHT,
+} align_t;
+
+/* ====================================== NEW IMPLEMENTATION ====================================== */
+
+/*
+ * Initialize terminal drawing stuff.
+ *
+ * offset_x : x cordinate position
+ *
+ * offset_y : y cordinate position
+ *
+ * width    : drawable width size
+ *
+ * height   : drawable height size
+ */
+bool draw_init( const uint8_t offset_x, const uint8_t offset_y,
+                const uint8_t width, const uint8_t height);
+
+/*
+ * End the drawing session
+ */
+void draw_end();
+
+/*
+ * Draw a box
+ *
+ * type     : type of box it will generates (PLAIN, TITLE)
+ *
+ * color    : the color of the box
+ *
+ * format   : "%s" "%i" stuff, just insert the text here or something
+ */
+void draw_box(const box_t type, const char* color, const char* format, ...);
+
+/*
+ * Draw a line with text
+ *
+ * alig     : alignment type (LEFT, CENTER, RIGHT)
+ *
+ * color    : the color of the box
+ *
+ * count    : number of color uses in the string (RED, BLUE, etc...)
+ *
+ * format   : "%s" "%i" stuff, just insert the text here or something
+ */
+void draw_line(const align_t align, const char* color, const uint8_t count, const char* format, ...);
+
+/*
+ * Draw a line with text, but as a user input
+ *
+ * alig     : alignment type (LEFT, CENTER, RIGHT)
+ *
+ * color    : the color of the box
+ *
+ * count    : number of color uses in the string (RED, BLUE, etc...)
+ *
+ * format   : "%s" "%i" stuff, just insert the text here or something
+ */
+void draw_input(const char* color, const uint8_t count, const char* format, ...);
+
+/*
+ * Draw a line decoration
+ *
+ * color    : the color of the box
+ */
+void draw_decor(const char* color);
+
+/*
+ * Change the offset of current line
+ *
+ * newline   : how much do you want to change
+ */
+void draw_change_current_line(uint8_t newline);
+
+/* ====================================== OLD IMPLEMENTATION ====================================== */
 /*
     Draw a text in (x, y) coordinate as you wish
 
