@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <time.h>
 
 #ifndef MESSAGE_H
 #define MESSAGE_H
@@ -20,17 +21,24 @@ typedef struct {
 typedef struct {
     char    nama[256];
     char    teks[256];
+    char    timestamp[256];
     user_t  whois;
 } pesan_t;
 
-bool pesan_init(const char* nama, user_t tipe);
+bool pesan_init();
 void pesan_kirim(const char *teks);
 void pesan_print();
 void pesan_end();
 
-void pesan_clear(const char *nama, const user_t type);
-void pesan_purge(const char *nama);
+bool pesan_clear(const char *nama, const user_t type);
+bool pesan_purge(const char *nama);
 void *pesan_update(void *arg);
+
+// Use this instead to start the conversation
+void display_pesan_start(char *nama, user_t tipe);
+void display_pesan_message();
+void display_pesan_clear();
+void display_pesan_purge();
 
 /* Example Usage:
  * #include <pthread.h>

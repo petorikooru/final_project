@@ -5,12 +5,14 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "tubes_interface.h"
 #include "tubes_main.h"
 #include "tubes_handler.h"
 #include "tubes_input.h"
 #include "tubes_manajemen.h"
 #include "tubes_message.h"
 #include "tubes_stok.h"
+#include "tubes_admin.h"
 
 int main(int argc, char *argv[]){
     if (argc > 1) {
@@ -32,40 +34,55 @@ int main(int argc, char *argv[]){
             debug_manajemen();
 
             print_info("Exiting manajemen debug mode...");
-        } else {
-            printf( "Usage: ./tubes.bin <debug_mode>\n"
-                    "+ message\t: Run message debug mode \n"
-                    "+ order\t\t: Run order debug mode \n"
-                    "+ manajemen\t: Run manajemen debug mode \n"
-                    "No argument: Run normal mode \n"
+        } else if (strcmp(argv[1], "admin") == 0) {
+            print_info("Entering admin debug mode...");
+            sleep(1); fflush(stdout);
+            debug_admin();
+
+            print_info("Exiting admin debug mode...");
+        }
+        else {
+            printf(
+                "Usage: ./tubes.bin <debug_mode>\n"
+                "+ message\t: Run message debug mode \n"
+                "+ order\t\t: Run order debug mode \n"
+                "+ manajemen\t: Run manajemen debug mode \n"
+                "No argument: Run normal mode \n"
             );
         }
     } else {
         print_info("Running the program normally...");
         sleep(1); fflush(stdout);
 
-        tampilan_utama();
+        display_utama();
     }
 }
 
 void debug_message(){
+    char username[MAX_STRLEN];
     int choice;
 
     while (true) {
         term_clean();
 
         printf("Select the user type:\n");
-        printf("0: Broker\n");
-        printf("1: User\n");
+        printf("1: Broker\n");
+        printf("2: User\n");
         printf("Your choice: ");
-        scanf("%d", &choice); getchar();
+        input_number(&choice);
 
         switch(choice) {
-            case BROKER:
-                debug_message_as_broker();
+            case 1:
+                printf("User you want to contact: ");
+                input_string(username);
+                display_pesan_start(username, BROKER);
+
                 break;
-            case USER:
-                debug_message_as_user();
+            case 2:
+                printf("Who are you: ");
+                input_string(username);
+                display_pesan_start(username, USER);
+
                 break;
             default:
                 return;
@@ -73,60 +90,36 @@ void debug_message(){
     }
 }
 
-void debug_message_as_broker(){
-    char username[256];
-    char teks[256];
-    pthread_t thread;
-
-    printf("User you want to contact: ");
-    fgets(username, sizeof(username), stdin);
-
-    pesan_init(username, BROKER);
-
-    pthread_create(&thread, NULL, pesan_update, NULL);
-    while (true) {
-        input_buffer_save();
-        input_buffer_copy(teks);
-
-        if (strcmp(teks, "/exit") == 0) break;
-
-        pesan_kirim(teks);
-    }
-    pesan_end();
-    pthread_join(thread, NULL);
-}
-
-void debug_message_as_user(){
-    char username[256];
-    char teks[256];
-    pthread_t thread;
-
-    printf("Who are you?: ");
-    fgets(username, sizeof(username), stdin);
-
-    pesan_init(username, USER);
-
-    pthread_create(&thread, NULL, pesan_update, NULL);
-    while (true) {
-        input_buffer_save();
-        input_buffer_copy(teks);
-
-        if (strcmp(teks, "/exit") == 0) break;
-
-        pesan_kirim(teks);
-    }
-    pesan_end();
-    pthread_join(thread, NULL);
-}
-
 void debug_order(){
-    stok_init();
+    display_stok_start();
 }
 
 void debug_manajemen(){
-    manajemen_init();
+    display_manajemen_start();
 }
 
-void tampilan_utama(){
+void debug_admin(){
+    display_admin_start();
+}
 
+void display_utama(){
+    int choice;
+
+    while (true) {
+        term_clean();
+
+        screen_draw_box_title(OFFSET_X, OFFSET_Y, WIDTH, HEIGHT, "D'Milsurp", BLU);
+        input_number(&choice);
+
+        switch(choice) {
+            case 1:
+
+                break;
+            case 2:
+
+                break;
+            default:
+                return;
+        }
+    }
 }

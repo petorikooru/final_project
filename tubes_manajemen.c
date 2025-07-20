@@ -6,7 +6,7 @@
 #include "tubes_handler.h"
 #include "tubes_input.h"
 
-User  users[MAX_USERS];
+static user_order_t users[MAX_USERS];
 int userCount = 0;
 
 int registerUser () {
@@ -118,7 +118,7 @@ void tambahPesanan(int userIndex) {
     system("pause");
 }
 
-void manajemen_init() {
+void display_manajemen_start() {
     int choice;
     int loggedInUser  = -1;
 

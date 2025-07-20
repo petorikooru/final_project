@@ -18,7 +18,7 @@ static void load_stok(Item *items, int *jmlh_brang);
 static void beli_barang(Item *items, int *jmlh_brang);
 static void simpan_pesanan(Order *order);
 
-void stok_init(){
+bool display_stok_start(){
     Item items[MAX_ITEMS];
     int jmlh_brang = 0;
     load_stok(items, &jmlh_brang);
@@ -164,16 +164,16 @@ static void sort_jmlh(Item *items, int jmlh_brang) {
 }
 
 static void beli_barang(Item *items, int *jmlh_brang) {
-
     Order order;
     order.item_count = 0;
     strcpy(order.status, "Menunggu");
 
     char lanjut;
     do {
-        int index = -1;
-        do {
+        int index = 0;
         char nama_barang[MAX_NAME_LENGTH];
+        getchar();
+        while (index == 0) {
         printf("\nMasukkan nama barang yang ingin dibeli: ");
         input_string(nama_barang);
 
@@ -184,20 +184,26 @@ static void beli_barang(Item *items, int *jmlh_brang) {
                 }
             }
 
-        if (index == -1) {
-            printf("Barang tidak ditemukan!\n");
+        if (index == 0) {
+            printf("\nBarang tidak ditemukan!\n");
             continue;
             }
-        }while (index == -1);
+        }
 
         int jumlah;
-        printf("Masukkan jumlah yang ingin dibeli: ");
+        int i = 0;
+        while (i == 0){
+        printf("\nMasukkan jumlah yang ingin dibeli: ");
         scanf("%d", &jumlah);
 
+        i = 1;
         if (jumlah > items[index].jmlh) {
             printf("Stok tidak mencukupi!\n");
-            continue;
+            i = 0;
+            break;
         }
+        }
+        getchar();
 
         strcpy(order.items[order.item_count].nama_barang, items[index].nama);
         order.items[order.item_count].jumlah_dibeli = jumlah;
@@ -206,9 +212,11 @@ static void beli_barang(Item *items, int *jmlh_brang) {
 
         items[index].jmlh -= jumlah;
 
-        printf("Tambahkan barang lain? (y/n): ");
-        scanf("%c", &lanjut);
-    } while (lanjut == 'y' && order.item_count < MAX_ITEMS);
+        do{
+        printf("\nTambahkan barang lain? (y/n): ");
+        scanf(" %c", &lanjut);
+        }while (lanjut != 'y' && lanjut !='n' && lanjut == 'Y' && lanjut == 'N');
+    } while ((lanjut == 'y' || lanjut == 'Y') && order.item_count < MAX_ITEMS);
 
     printf("\n=== DETAIL PENGIRIMAN ===\n");
     printf("Alamat: ");
@@ -221,7 +229,7 @@ static void beli_barang(Item *items, int *jmlh_brang) {
 
     simpan_pesanan(&order);
 
-    printf("\nTekan enter untuk melanjutkan...");
+    printf("\n\e[1mTERIMAKASIH TELAH MEMBELI DARI D MILSURP\e[0m\nTekan enter untuk melanjutkan...");
     getchar();
     getchar();
 }

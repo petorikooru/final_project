@@ -10,7 +10,7 @@ void input_string(char string[]) {
 }
 
 void input_number(int *integer) {
-    char *input;
+    char input[MAX_STRLEN];
     input_string(input);
 
     sscanf(input, "%i", integer);

@@ -1,15 +1,15 @@
 # Final Project (-ish)
 
-# Compiling
+# Compile
 ## Using makefile
 ```
 make
 ```
 ## Rawballing
 ```
-clang tubes_main.c tubes_message.c tubes_input.c tubes_stok.c tubes_manajemen.c -o tubes.bin
+clang tubes_main.c tubes_message.c tubes_stok.c tubes_manajemen.c tubes_admin.c tubes_interface.c tubes_input.c -o tubes.bin
 ```
-# Running
+# Run
 ## Normally
 ```
 ./tubes.bin

@@ -11,8 +11,8 @@ typedef struct {
     int     orderCount;
     char    orders[MAX_ORDERS][MAX_LENGTH];
     char    orderStatus[MAX_ORDERS][MAX_LENGTH];
-} User;
+} user_order_t;
 
-void manajemen_init();
+void display_manajemen_start();
 
 #endif
