@@ -47,6 +47,7 @@ int main(int argc, char *argv[]){
                 "+ message\t: Run message debug mode \n"
                 "+ order\t\t: Run order debug mode \n"
                 "+ manajemen\t: Run manajemen debug mode \n"
+                "+ admin\t\t: Run admin debug mode \n"
                 "No argument: Run normal mode \n"
             );
         }
