@@ -30,27 +30,27 @@ typedef struct {
     int     orderCount;
     char    orders      [MAX_ORDERS][MAX_STRLEN];
     char    orderStatus [MAX_ORDERS][MAX_STRLEN];
+    char    alamat      [MAX_ORDERS][MAX_STRLEN];
+    char    telepon     [MAX_ORDERS][MAX_STRLEN];
+
 } order_t;
 
 typedef struct {
     char username   [MAX_STRLEN];
     char password   [MAX_STRLEN];
-    char message    [MAX_STRLEN];
     bool banned;
     user_t type;
     order_t order;
 } data_t;
 
-#define FILENAME    "database.tb"
+#define DATABASE_FILE    "database.tb"
 
 typedef enum {
-    FAILED,
-    FAILED_N,
-    SUCCESS,
-    SUCCESS_N,
-} Status;
+    C_SUCCESS,
+    C_FAILED,
+} choice_t;
 
-Status database_user_signup( const char *username, const char *password,
+choice_t database_user_signup( const char *username, const char *password,
                                    data_t *database_user);
 database_user_t database_user_login(const char *username, const char *password, data_t *database_user);
 void database_update(data_t *user);

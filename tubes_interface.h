@@ -80,6 +80,9 @@ typedef enum {
 
 void draw_dialog_confirmation(const char* format, ...);
 void draw_dialog_continue(const char* format, ...);
+void draw_dialog_err(const char* format, ...);
+void draw_dialog_info(const char* format, ...);
+void draw_dialog_warn(const char* format, ...);
 
 /*
  * Initialize terminal drawing stuff.

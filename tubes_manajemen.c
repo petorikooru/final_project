@@ -128,17 +128,13 @@ void display_user_menu() {
                 memset(current_user, 0, MAX_STRLEN);
                 return;
             default:
-                draw_dialog_continue("Input tidak valid!");
+                draw_dialog_err("Input tidak valid!");
                 break;
         }
     }
 }
 
 void display_user_register(){
-    typedef enum {
-        C_SUCCESS,
-        C_FAILED,
-    } choice_t;
     char username[MAX_STRLEN];
     char password[MAX_STRLEN];
 
@@ -158,15 +154,15 @@ void display_user_register(){
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
-    Status type = database_user_signup(username, password, user);
+    choice_t type = database_user_signup(username, password, user);
 
     switch(type){
-        case SUCCESS:
+        case C_SUCCESS:
             draw_dialog_continue("Registrasi berhasil!");
             database_user_init(username, password, user);
             break;
-        case FAILED:
-            draw_dialog_continue("Gagal untuk membuat akun!");
+        case C_FAILED:
+            draw_dialog_err("Gagal untuk membuat akun!");
             break;
     }
 
@@ -175,10 +171,6 @@ void display_user_register(){
 }
 
 void display_user_login(){
-    typedef enum {
-        C_SUCCESS,
-        C_FAILED,
-    } choice_t;
     char username[MAX_STRLEN];
     char password[MAX_STRLEN];
 
@@ -202,11 +194,11 @@ void display_user_login(){
 
     switch(type){
             case D_BROKER:
-                draw_dialog_continue("Mohon untuk pergi ke seleksi Admin!");
+                draw_dialog_err("Mohon untuk pergi ke seleksi Admin!");
                 break;
             case D_USER:
                 if (user->banned){
-                    draw_dialog_continue("Broker telah meng-ban anda!");
+                    draw_dialog_err("Broker telah meng-ban anda!");
                 } else {
                     draw_dialog_continue("Login berhasil!");
                     display_user_init(user);
@@ -256,8 +248,7 @@ void display_user_start() {
             case M_EXIT:
                 return;
             default:
-                log_print_err("Invalid input! Press enter to continue...");
-                getchar();
+                draw_dialog_err("Invalid input! Press enter to continue...");
                 break;
         }
     }

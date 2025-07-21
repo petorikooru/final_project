@@ -5,23 +5,22 @@
 #include "tubes_stok.h"
 #include "tubes_input.h"
 #include "tubes_handler.h"
+#include "tubes_interface.h"
+#include "tubes_database.h"
 
-static void tampilkan_menu(Item *items, int jmlh_brang);
-static void liat_stok(Item *items, int jmlh_brang);
-static void cari_item(Item *items, int jmlh_brang);
-static void sort_nama(Item *items, int jmlh_brang);
-static void sort_harga(Item *items, int jmlh_brang);
-static void sort_jmlh(Item *items, int jmlh_brang);
-static void load_stok(Item *items, int *jmlh_brang);
+static void tampilkan_menu(product_t *items, int jmlh_brang);
+static void liat_stok(product_t *items, int jmlh_brang);
+static void cari_item(product_t *items, int jmlh_brang);
+static void sort_nama(product_t *items, int jmlh_brang);
+static void sort_harga(product_t *items, int jmlh_brang);
+static void sort_jmlh(product_t *items, int jmlh_brang);
+static void load_stok(product_t *items, int *jmlh_brang);
 
 //prototipe unik
-static void beli_barang(Item *items, int *jmlh_brang);
-static void simpan_pesanan(Order *order);
+static void beli_barang(product_t *items, int *jmlh_brang);
+static void simpan_pesanan(product_t *order);
 
 void display_stok_start(){
-    Item items[MAX_ITEMS];
-    int jmlh_brang = 0;
-
     typedef enum {
         M_LIHAT     = 1,
         M_CARI      = 2,
@@ -33,7 +32,7 @@ void display_stok_start(){
     while(1) {
         term_clean();
 
-        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 10);
         if (status == false) return;
 
         draw_box(TITLE, BLU, "Stok Menu");
@@ -69,21 +68,21 @@ void display_stok_start(){
     }
 }
 
-static void load_stok(Item *items, int *Jmlh_brang) {
+static void load_stok(product_t *items, int *Jmlh_brang) {
     term_clean();
-    FILE *file = fopen(NAMA_FILE, "rb");
+    FILE *file = fopen(STOCK_FILE, "rb");
     if (file == NULL) {
         *Jmlh_brang = 0;
         return;
     }
 
-    *Jmlh_brang = fread(items, sizeof(Item), MAX_ITEMS, file);
+    *Jmlh_brang = fread(items, sizeof(product_t), MAX_ITEMS, file);
     fclose(file);
 }
 
-static void tampilkan_menu(Item *items, int jmlh_brang) {
-    Item temp_items[MAX_ITEMS];
-    memcpy(temp_items, items, sizeof(Item) * jmlh_brang);
+static void tampilkan_menu(product_t *items, int jmlh_brang) {
+    product_t temp_items[MAX_ITEMS];
+    memcpy(temp_items, items, sizeof(product_t) * jmlh_brang);
 
     int pilihan;
     do {
@@ -131,21 +130,21 @@ static void tampilkan_menu(Item *items, int jmlh_brang) {
     } while (pilihan != 0);
 }
 
-static void liat_stok(Item *items, int jmlh_brang) {
+static void liat_stok(product_t *items, int jmlh_brang) {
     term_clean();
     printf("\n=== Stok Sekarang ===\n");
     printf("ID       Nama                      Jumlah     Harga     \n");
     printf("--------------------------------------------------------\n");
     for (int i = 0; i < jmlh_brang; i++) {
         printf("%-4d  %-30s %-10d $%-10.2f\n",
-               i + 1, items[i].nama, items[i].jmlh, items[i].harga);
+               i + 1, items[i].nama, items[i].jumlah, items[i].harga);
     }
     if (jmlh_brang == 0) {
         printf("Stok Kosong.\n");
     }
 }
 
-static void cari_item(Item *items, int jmlh_brang) {
+static void cari_item(product_t *items, int jmlh_brang) {
     term_clean();
     char nama[MAX_STRLEN];
     printf("Masukan Nama Barang Yang Dicari: ");
@@ -158,7 +157,7 @@ static void cari_item(Item *items, int jmlh_brang) {
     for (int i = 0; i < jmlh_brang; i++) {
         if (strstr(items[i].nama, nama) != NULL) {
             printf("%-4d  %-30s %-10d $%-10.2f\n",
-                   i + 1, items[i].nama, items[i].jmlh, items[i].harga);
+                   i + 1, items[i].nama, items[i].jumlah, items[i].harga);
             found = 1;
         }
     }
@@ -167,12 +166,12 @@ static void cari_item(Item *items, int jmlh_brang) {
     }
 }
 
-static void sort_nama(Item *items, int jmlh_brang) {
+static void sort_nama(product_t *items, int jmlh_brang) {
     term_clean();
     for (int i = 0; i < jmlh_brang - 1; i++) {
         for (int j = i + 1; j < jmlh_brang; j++) {
             if (strcmp(items[i].nama, items[j].nama) > 0) {
-                Item temp = items[i];
+                product_t temp = items[i];
                 items[i] = items[j];
                 items[j] = temp;
             }
@@ -180,12 +179,12 @@ static void sort_nama(Item *items, int jmlh_brang) {
     }
 }
 
-static void sort_harga(Item *items, int jmlh_brang) {
+static void sort_harga(product_t *items, int jmlh_brang) {
     term_clean();
     for (int i = 0; i < jmlh_brang - 1; i++) {
         for (int j = i + 1; j < jmlh_brang; j++) {
             if (items[i].harga > items[j].harga) {
-                Item temp = items[i];
+                product_t temp = items[i];
                 items[i] = items[j];
                 items[j] = temp;
             }
@@ -193,12 +192,12 @@ static void sort_harga(Item *items, int jmlh_brang) {
     }
 }
 
-static void sort_jmlh(Item *items, int jmlh_brang) {
+static void sort_jmlh(product_t *items, int jmlh_brang) {
     term_clean();
     for (int i = 0; i < jmlh_brang - 1; i++) {
         for (int j = i + 1; j < jmlh_brang; j++) {
-            if (items[i].jmlh > items[j].jmlh) {
-                Item temp = items[i];
+            if (items[i].jumlah > items[j].jumlah) {
+                product_t temp = items[i];
                 items[i] = items[j];
                 items[j] = temp;
             }
@@ -206,100 +205,100 @@ static void sort_jmlh(Item *items, int jmlh_brang) {
     }
 }
 
-static void beli_barang(Item *items, int *jmlh_brang) {
-    Order order;
-    order.item_count = 0;
-    strcpy(order.status, "Menunggu");
+// static void beli_barang(product_t *items, int *jmlh_brang) {
+//     data_t user;
+//     user.order.orderCount = 0;
+//     strcpy(order.status, "Menunggu");
 
-    char lanjut;
-    do {
-        int index = 0;
-        char nama_barang[MAX_NAME_LENGTH];
-        getchar();
-        while (index == 0) {
-        printf("\nMasukkan nama barang yang ingin dibeli: ");
-        input_string(nama_barang);
+//     char lanjut;
+//     do {
+//         int index = 0;
+//         char nama_barang[MAX_NAME_LENGTH];
+//         getchar();
+//         while (index == 0) {
+//         printf("\nMasukkan nama barang yang ingin dibeli: ");
+//         input_string(nama_barang);
 
-        for (int i = 0; i < *jmlh_brang; i++) {
-            if (strcmp(items[i].nama, nama_barang) == 0) {
-                index = i;
-                break;
-                }
-            }
+//         for (int i = 0; i < *jmlh_brang; i++) {
+//             if (strcmp(items[i].nama, nama_barang) == 0) {
+//                 index = i;
+//                 break;
+//                 }
+//             }
 
-        if (index == 0) {
-            printf("\nBarang tidak ditemukan!\n");
-            continue;
-            }
-        }
+//         if (index == 0) {
+//             printf("\nBarang tidak ditemukan!\n");
+//             continue;
+//             }
+//         }
 
-        int jumlah;
-        int i = 0;
-        while (i == 0){
-        printf("\nMasukkan jumlah yang ingin dibeli: ");
-        scanf("%d", &jumlah);
+//         int jumlah;
+//         int i = 0;
+//         while (i == 0){
+//         printf("\nMasukkan jumlah yang ingin dibeli: ");
+//         scanf("%d", &jumlah);
 
-        i = 1;
-        if (jumlah > items[index].jmlh) {
-            printf("Stok tidak mencukupi!\n");
-            i = 0;
-            break;
-        }
-        }
-        getchar();
+//         i = 1;
+//         if (jumlah > items[index].jmlh) {
+//             printf("Stok tidak mencukupi!\n");
+//             i = 0;
+//             break;
+//         }
+//         }
+//         getchar();
 
-        strcpy(order.items[order.item_count].nama_barang, items[index].nama);
-        order.items[order.item_count].jumlah_dibeli = jumlah;
-        order.items[order.item_count].harga_satuan = items[index].harga;
-        order.item_count++;
+//         strcpy(order.items[order.item_count].nama_barang, items[index].nama);
+//         order.items[order.item_count].jumlah_dibeli = jumlah;
+//         order.items[order.item_count].harga_satuan = items[index].harga;
+//         order.item_count++;
 
-        items[index].jmlh -= jumlah;
+//         items[index].jmlh -= jumlah;
 
-        do{
-        printf("\nTambahkan barang lain? (y/n): ");
-        scanf(" %c", &lanjut);
-        }while (lanjut != 'y' && lanjut !='n' && lanjut == 'Y' && lanjut == 'N');
-    } while ((lanjut == 'y' || lanjut == 'Y') && order.item_count < MAX_ITEMS);
+//         do{
+//         printf("\nTambahkan barang lain? (y/n): ");
+//         scanf(" %c", &lanjut);
+//         }while (lanjut != 'y' && lanjut !='n' && lanjut == 'Y' && lanjut == 'N');
+//     } while ((lanjut == 'y' || lanjut == 'Y') && order.item_count < MAX_ITEMS);
 
-    printf("\n=== DETAIL PENGIRIMAN ===\n");
-    printf("Alamat: ");
-    input_string(order.alamat);
-    printf("Nomor Telepon: ");
-    scanf(" %d", order.telepon);
+//     printf("\n=== DETAIL PENGIRIMAN ===\n");
+//     printf("Alamat: ");
+//     input_string(order.alamat);
+//     printf("Nomor Telepon: ");
+//     scanf(" %d", order.telepon);
 
-    printf("=== DETAIL PEMBAYARAN ===\n");
-    printf("Nomor Rekening\t: 707563602600\nNama Bank\t: CIMB NIAGA\nAtas Nama\t: DAFFA RIZQY ANDIKA\n");
+//     printf("=== DETAIL PEMBAYARAN ===\n");
+//     printf("Nomor Rekening\t: 707563602600\nNama Bank\t: CIMB NIAGA\nAtas Nama\t: DAFFA RIZQY ANDIKA\n");
 
-    simpan_pesanan(&order);
+//     simpan_pesanan(&order);
 
-    printf("\n\e[1mTERIMAKASIH TELAH MEMBELI DARI D MILSURP\e[0m\nTekan enter untuk melanjutkan...");
-    getchar();
-    getchar();
-}
+//     printf("\n\e[1mTERIMAKASIH TELAH MEMBELI DARI D MILSURP\e[0m\nTekan enter untuk melanjutkan...");
+//     getchar();
+//     getchar();
+// }
 
-static void simpan_pesanan(Order *order) {
-    char filename[50];
-    int file_count = 0;
+// static void simpan_pesanan(Order *order) {
+//     char filename[50];
+//     int file_count = 0;
 
-    strcpy(filename, "shipping.bin");
+//     strcpy(filename, "shipping.bin");
 
-    FILE *test;
-    while ((test = fopen(filename, "rb")) != NULL) {
-        fclose(test);
-        file_count++;
-        sprintf(filename, "shipping%d.bin", file_count);
-    }
+//     FILE *test;
+//     while ((test = fopen(filename, "rb")) != NULL) {
+//         fclose(test);
+//         file_count++;
+//         sprintf(filename, "shipping%d.bin", file_count);
+//     }
 
-    FILE *file = fopen(filename, "wb");
-    if (!file) {
-        printf("Gagal menyimpan pesanan!\n");
-        return;
-    }
+//     FILE *file = fopen(filename, "wb");
+//     if (!file) {
+//         printf("Gagal menyimpan pesanan!\n");
+//         return;
+//     }
 
-    if (fwrite(order, sizeof(Order), 1, file) != 1) {
-        printf("Gagal menulis data pesanan!\n");
-    }
+//     if (fwrite(order, sizeof(Order), 1, file) != 1) {
+//         printf("Gagal menulis data pesanan!\n");
+//     }
 
-    fclose(file);
-    printf("Pesanan berhasil disimpan ke %s\n", filename);
-}
+//     fclose(file);
+//     printf("Pesanan berhasil disimpan ke %s\n", filename);
+// }

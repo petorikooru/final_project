@@ -1,8 +1,3 @@
-
-
-
-
-
 // Debugging
 void debug_message();
 void debug_message_as_user();

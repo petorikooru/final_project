@@ -23,7 +23,7 @@ void database_update(data_t *user){
         Return : None
     */
 
-    FILE    *database_file = fopen(FILENAME, "rb+");
+    FILE    *database_file = fopen(DATABASE_FILE, "rb+");
     data_t  *database_user = malloc(sizeof(data_t));
 
     // Update to file
@@ -48,7 +48,7 @@ static void database_create(FILE *database_file){
         Return : None
     */
 
-    database_file = fopen(FILENAME, "wb");
+    database_file = fopen(DATABASE_FILE, "wb");
 
     // Default admin configuration
     const char username[] = "Admin";
@@ -85,7 +85,7 @@ void database_user_init(const char *username, const char *password,
     user->type  = USER;
 
     // Save the user data
-    FILE* database_file = fopen(FILENAME, "ab");
+    FILE* database_file = fopen(DATABASE_FILE, "ab");
     fwrite(user, sizeof(data_t), 1, database_file);
     fclose(database_file);
 }
@@ -105,7 +105,7 @@ database_user_t database_user_login(const char *username, const char *password, 
         Return : user type
     */
 
-    FILE* database_file = fopen(FILENAME, "rb");
+    FILE* database_file = fopen(DATABASE_FILE, "rb");
     if (!database_file) {
         return D_NONE;
     }
@@ -124,7 +124,7 @@ database_user_t database_user_login(const char *username, const char *password, 
                     user_type = D_USER;
                 break;
             } else {
-                draw_dialog_continue("Wrong Password bleh :p");
+                draw_dialog_err("Wrong Password bleh :p");
                 user_type = D_NONE;
                 break;
             }
@@ -132,7 +132,7 @@ database_user_t database_user_login(const char *username, const char *password, 
     }
 
     if (!found){
-        draw_dialog_continue("User tidak ditemukan! :p");
+        draw_dialog_err("User tidak ditemukan! :p");
         user_type = D_NONE;
     }
 
@@ -140,7 +140,7 @@ database_user_t database_user_login(const char *username, const char *password, 
     return user_type;
 }
 
-Status database_user_signup( const char *username, const char *password,
+choice_t database_user_signup( const char *username, const char *password,
                                    data_t *database_user){
     /*
         Check whether the user input valid inputs or whether
@@ -157,19 +157,19 @@ Status database_user_signup( const char *username, const char *password,
 
     // If the user input blank
     if (strlen(username) == 0){
-        draw_dialog_continue("Username cannot be blank!");
-        return FAILED;
+        draw_dialog_err("Username cannot be blank!");
+        return C_FAILED;
     } else if (strlen(password) == 0){
-        draw_dialog_continue("Password cannot be blank!");
-        return FAILED;
+        draw_dialog_err("Password cannot be blank!");
+        return C_FAILED;
     }
 
     // Check whether the data exist or not yet
-    FILE* database_file = fopen(FILENAME, "rb+");
+    FILE* database_file = fopen(DATABASE_FILE, "rb+");
 
     if (!database_file){
         database_create(database_file);
-        database_file = fopen(FILENAME, "rb+");
+        database_file = fopen(DATABASE_FILE, "rb+");
     }
 
     // Check whether the username is already registered
@@ -185,9 +185,9 @@ Status database_user_signup( const char *username, const char *password,
     fclose(database_file);
 
     if (found){
-        draw_dialog_continue("Username already exist!");
-        return FAILED;
+        draw_dialog_err("Username already exist!");
+        return C_FAILED;
     }
 
-    return SUCCESS;
+    return C_SUCCESS;
 }

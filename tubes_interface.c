@@ -52,17 +52,17 @@ void get_window_size(uint8_t *width, uint8_t *height){
 }
 
 static void draw_check(){
-    if (current_line > current_height + current_y) {
-        SET_OFFSET_ERR(1, 20);
-        print_warn("Draw: Current line passes the limit of the height!");
-        fprintf(stderr, "\t line: %i > height: %i", current_line, current_height);
+    // if (current_line > current_height + current_y) {
+    //     SET_OFFSET_ERR(1, 20);
+    //     print_warn("Draw: Current line passes the limit of the height!");
+    //     fprintf(stderr, "\t line: %i > height: %i", current_line, current_height);
 
-    }
-    if (check_width >= current_width + current_x) {
-        SET_OFFSET_ERR(1, 22);
-        print_warn("Draw: Current line passes the limit of the width!");
-        fprintf(stderr, "\t checked: %i > width: %i", check_width, current_width);
-    }
+    // }
+    // if (check_width >= current_width + current_x) {
+    //     SET_OFFSET_ERR(1, 22);
+    //     print_warn("Draw: Current line passes the limit of the width!");
+    //     fprintf(stderr, "\t checked: %i > width: %i", check_width, current_width);
+    // }
 }
 
 bool draw_init( const offset_t offset, const uint8_t offset_x, const uint8_t offset_y,
@@ -104,9 +104,6 @@ bool draw_init( const offset_t offset, const uint8_t offset_x, const uint8_t off
     current_line    = current_y;
     check_width     = 0;
     initialized     = true;
-
-    SET_OFFSET_ERR(1, 19);
-    fprintf(stderr, YEL "Size: %i, %i" RST, current_x, current_y);
 
     return true;
 }
@@ -190,6 +187,7 @@ void draw_box(const box_t type, const char* color, const char* format, ...){
                 else if(j < (current_width - title_width) - 4)
                     printf(SPRITE_BAR_HORIZONTAL);
             }
+            break;
 
         case PLAIN:
             for (uint8_t i = 0; i < current_height; i++){
@@ -230,8 +228,8 @@ void draw_line(const align_t align, const char* color, const uint8_t count, cons
     vsprintf(string, format, args);
     va_end(args);
 
-    SET_OFFSET(current_x, current_line);
-    SET_COLOR(RST); SET_COLOR(color); printf(SPRITE_BAR_VERTICAL" ");
+    SET_OFFSET(current_x + 2, current_line);
+    // SET_COLOR(RST); SET_COLOR(color); printf(SPRITE_BAR_VERTICAL" ");
     if (count == 0)
         SET_COLOR(RST);
     else
@@ -270,6 +268,7 @@ void draw_line(const align_t align, const char* color, const uint8_t count, cons
         print_todo("Align Right");
     }
 
+    SET_OFFSET(string_len + current_x + 3, current_line);
     SET_COLOR(RST);
     draw_check();
     current_line++;
@@ -391,6 +390,75 @@ void draw_dialog_continue(const char* format, ...){
     if (status == false) return;
 
     draw_box(TITLE, YEL, "Confirmation Dialog");
+    draw_line(CENTER, YEL, 1, YEL"%s", string);
+    draw_line(CENTER, YEL, 1, YEL_BG"Press enter to continue...");
+    draw_end();
+
+    while (getchar() != '\n');
+    SET_CURSOR(CURSOR_SHOW);
+}
+
+void draw_dialog_err(const char* format, ...){
+    char string[LEN_MAX];
+    va_list args;
+
+    va_start(args, format);
+    vsprintf(string, format, args);
+    va_end(args);
+
+    term_clean();
+    SET_CURSOR(CURSOR_HIDE);
+
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+    if (status == false) return;
+
+    draw_box(TITLE, RED, "Error Dialog");
+    draw_line(CENTER, RED, 1, RED"%s", string);
+    draw_line(CENTER, RED, 1, RED_BG"Press enter to continue...");
+    draw_end();
+
+    while (getchar() != '\n');
+    SET_CURSOR(CURSOR_SHOW);
+}
+
+void draw_dialog_info(const char* format, ...){
+    char string[LEN_MAX];
+    va_list args;
+
+    va_start(args, format);
+    vsprintf(string, format, args);
+    va_end(args);
+
+    term_clean();
+    SET_CURSOR(CURSOR_HIDE);
+
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+    if (status == false) return;
+
+    draw_box(TITLE, BLU, "Info Dialog");
+    draw_line(CENTER, BLU, 1, BLU"%s", string);
+    draw_line(CENTER, BLU, 1, BLU_BG"Press enter to continue...");
+    draw_end();
+
+    while (getchar() != '\n');
+    SET_CURSOR(CURSOR_SHOW);
+}
+
+void draw_dialog_warn(const char* format, ...){
+    char string[LEN_MAX];
+    va_list args;
+
+    va_start(args, format);
+    vsprintf(string, format, args);
+    va_end(args);
+
+    term_clean();
+    SET_CURSOR(CURSOR_HIDE);
+
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+    if (status == false) return;
+
+    draw_box(TITLE, YEL, "Warn Dialog");
     draw_line(CENTER, YEL, 1, YEL"%s", string);
     draw_line(CENTER, YEL, 1, YEL_BG"Press enter to continue...");
     draw_end();

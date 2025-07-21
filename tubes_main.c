@@ -175,12 +175,12 @@ void display_utama(){
                 display_user_start();
                 break;
             case M_ADMIN:
-                log_print_todo("Admin login page");
+                display_admin_start();
                 break;
             case M_EXIT:
                 return;
             default:
-                draw_dialog_continue("Input tidak valid!");
+                draw_dialog_err("Input tidak valid!");
                 break;
         }
     }
