@@ -68,6 +68,7 @@ typedef enum {
 
 typedef enum {
     TITLE,
+    TITLE_NOBOX,
     PLAIN,
 } box_t;
 
@@ -76,6 +77,9 @@ typedef enum {
     CENTER,
     RIGHT,
 } align_t;
+
+void draw_dialog_confirmation(const char* format, ...);
+void draw_dialog_continue(const char* format, ...);
 
 /*
  * Initialize terminal drawing stuff.
@@ -86,7 +90,7 @@ typedef enum {
  * width    : drawable width size |
  * height   : drawable height size
  */
-bool draw_init( const offset_t type, const uint8_t offset_x, const uint8_t offset_y,
+bool draw_init( const offset_t offset, const uint8_t offset_x, const uint8_t offset_y,
                 const uint8_t width, const uint8_t height);
 
 /*

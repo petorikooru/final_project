@@ -51,10 +51,24 @@ void get_window_size(uint8_t *width, uint8_t *height){
 	*height = ws.ws_row / 2;
 }
 
-bool draw_init( const offset_t type, const uint8_t offset_x, const uint8_t offset_y,
+static void draw_check(){
+    if (current_line > current_height + current_y) {
+        SET_OFFSET_ERR(1, 20);
+        print_warn("Draw: Current line passes the limit of the height!");
+        fprintf(stderr, "\t line: %i > height: %i", current_line, current_height);
+
+    }
+    if (check_width >= current_width + current_x) {
+        SET_OFFSET_ERR(1, 22);
+        print_warn("Draw: Current line passes the limit of the width!");
+        fprintf(stderr, "\t checked: %i > width: %i", check_width, current_width);
+    }
+}
+
+bool draw_init( const offset_t offset, const uint8_t offset_x, const uint8_t offset_y,
                 const uint8_t width, const uint8_t height){
 
-    if (type == RAW && (offset_x <= 0 || offset_y <= 0)) {
+    if (offset == RAW && (offset_x <= 0 || offset_y <= 0)) {
         SET_OFFSET_ERR(1, 18);
         print_err("Draw: Offset must be greater than 0!");
         return false;
@@ -65,7 +79,7 @@ bool draw_init( const offset_t type, const uint8_t offset_x, const uint8_t offse
     uint8_t center_x, center_y;
     get_window_size(&center_x, &center_y);
 
-    switch (type) {
+    switch (offset) {
         case TOP_LEFT:
             current_x       = 1;
             current_y       = 1;
@@ -107,20 +121,6 @@ void draw_end(){
     initialized     = false;
 }
 
-static void draw_check(){
-    if (current_line > current_height + current_y) {
-        SET_OFFSET_ERR(1, 20);
-        print_warn("Draw: Current line passes the limit of the height!");
-        fprintf(stderr, "\t line: %i > height: %i", current_line, current_height);
-
-    }
-    if (check_width >= current_width + current_x) {
-        SET_OFFSET_ERR(1, 22);
-        print_warn("Draw: Current line passes the limit of the width!");
-        fprintf(stderr, "\t checked: %i > width: %i", check_width, current_width);
-    }
-}
-
 void draw_box(const box_t type, const char* color, const char* format, ...){
     if (initialized == false){
         SET_OFFSET_ERR(1, 19);
@@ -131,68 +131,86 @@ void draw_box(const box_t type, const char* color, const char* format, ...){
     char string[LEN_MAX];
     va_list args;
 
+    va_start(args, format);
+    vsprintf(string, format, args);
+    va_end(args);
+
+    const uint8_t middle = current_width / 2;
+    const uint8_t title_width = strlen(string);
+    const uint8_t title_offset = 2;
+    const uint8_t title_placement = middle - (title_width / 2) - title_offset;
+
     SET_OFFSET(current_x, current_y);
     SET_COLOR(color);
 
-    if (type == TITLE) {
-        va_start(args, format);
-        vsprintf(string, format, args);
-        va_end(args);
+    switch (type) {
+        case TITLE:
+            for (uint8_t i = 0; i < current_height; i++){
+                SET_OFFSET(current_x, current_y + i);
 
-        const uint8_t middle = current_width / 2;
-        const uint8_t title_width = strlen(string);
-        const uint8_t title_offset = 2;
-        const uint8_t title_placement = middle - (title_width / 2) - title_offset;
+                for (uint8_t j = 0; j < current_width; j++){
+                    if (i == 0){
+                        if (j == 0)
+                            printf(SPRITE_TOP_LEFT);
+                        else if (j == (current_width - title_width) - 4)
+                                printf(SPRITE_TOP_RIGHT);
+                        else if (j == title_placement)
+                            printf("{ %s }", string);
+                        else if(j < (current_width - title_width) - 4)
+                            printf(SPRITE_BAR_HORIZONTAL);
+                        else break;
+                    } else if (i == current_height - 1){
+                        if (j == 0)
+                            printf(SPRITE_BOTTOM_LEFT);
+                        else if (j == current_width - 1)
+                            printf(SPRITE_BOTTOM_RIGHT);
+                        else
+                            printf(SPRITE_BAR_HORIZONTAL);
+                    } else {
+                        if (j == 0 || j == current_width - 1)
+                            printf(SPRITE_BAR_VERTICAL);
+                        else
+                            printf(" ");
+                    }
+                }
+                SET_CURSOR(CURSOR_DOWN);
+            }
+            break;
 
-        for (uint8_t i = 0; i < current_height; i++){
-            SET_OFFSET(current_x, current_y + i);
+        case TITLE_NOBOX:
+            SET_OFFSET(current_x, current_y);
 
             for (uint8_t j = 0; j < current_width; j++){
-                if (i == 0){
-                    if (j == 0)
-                        printf(SPRITE_TOP_LEFT);
-                    else if (j == (current_width - title_width) - 4)
-                        printf(SPRITE_TOP_RIGHT);
-                    else if (j == title_placement)
-                        printf("{ %s }", string);
-                    else if(j < (current_width - title_width) - 4)
-                        printf(SPRITE_BAR_HORIZONTAL);
-                    else break;
-                } else if (i == current_height - 1){
-                    if (j == 0)
-                        printf(SPRITE_BOTTOM_LEFT);
-                    else if (j == current_width - 1)
-                        printf(SPRITE_BOTTOM_RIGHT);
-                    else
-                        printf(SPRITE_BAR_HORIZONTAL);
-                } else {
-                    if (j == 0 || j == current_width - 1)
-                        printf(SPRITE_BAR_VERTICAL);
-                    else
-                        printf(" ");
-                }
+                if (j == 0)
+                    printf(SPRITE_T_LEFT);
+                else if (j == (current_width - title_width) - 4)
+                    printf(SPRITE_T_RIGHT);
+                else if (j == title_placement)
+                    printf("{ %s }", string);
+                else if(j < (current_width - title_width) - 4)
+                    printf(SPRITE_BAR_HORIZONTAL);
             }
-            SET_CURSOR(CURSOR_DOWN);
-        }
-    } else {
-        for (uint8_t i = 0; i < current_height; i++){
-            SET_OFFSET(current_x, current_y + i);
 
-            for (uint8_t j = 0; j < current_width; j++){
-                if (i == 0 || i == current_height - 1){
-                    if (j == 0 || j == current_width - 1)
-                        printf("+");
-                    else
-                        printf(SPRITE_BAR_HORIZONTAL);
-                } else {
-                    if (j == 0 || j == current_width - 1)
-                        printf("│");
-                    else
-                        printf(" ");
+        case PLAIN:
+            for (uint8_t i = 0; i < current_height; i++){
+                SET_OFFSET(current_x, current_y + i);
+
+                for (uint8_t j = 0; j < current_width; j++){
+                    if (i == 0 || i == current_height - 1){
+                        if (j == 0 || j == current_width - 1)
+                            printf("+");
+                        else
+                            printf(SPRITE_BAR_HORIZONTAL);
+                    } else {
+                        if (j == 0 || j == current_width - 1)
+                            printf("│");
+                        else
+                            printf(" ");
+                    }
                 }
+                SET_CURSOR(CURSOR_DOWN);
             }
-            SET_CURSOR(CURSOR_DOWN);
-        }
+            break;
     }
 
     SET_COLOR(RST);
@@ -228,28 +246,23 @@ void draw_line(const align_t align, const char* color, const uint8_t count, cons
         printf("%s", string);
         for (uint8_t i = 0; i < width_offset - string_len; i++) printf(" ");
 
-    } else if (align == RIGHT) {
+    } else if (align == CENTER) {
         const uint8_t middle = current_width / 2;
         const uint8_t string_len = strlen(string);
-        const uint8_t string_offset = 2;
+        const uint8_t string_offset = 0;
         const uint8_t string_placement = middle - (string_len / 2) - string_offset;
-        char* string_padding = malloc(string_placement + 1);
+        char* string_padding = malloc(string_placement + 2);
 
         for (uint8_t i = 0; i < string_placement; i++){
             string_padding[i] = ' ';
         }
         string_padding[string_placement] = '\0';
 
-        char *string_center = malloc(string_len + string_placement + 1);
+        char *string_center = malloc(string_len + string_placement + 2);
         strcpy(string_center, string_padding);
         strcat(string_center, string);
 
-        SET_COLOR(RST); SET_COLOR(color); printf(SPRITE_BAR_VERTICAL);
-
         printf("%s", string_center);
-        for (uint8_t i = 0; i < width_offset - string_len; i++) printf(" ");
-
-        SET_COLOR(RST); SET_COLOR(color); printf(SPRITE_BAR_VERTICAL);
 
         free(string_padding);
         free(string_center);
@@ -277,17 +290,14 @@ void draw_input(const char* color, const uint8_t count, const char* format, ...)
     vsprintf(string, format, args);
     va_end(args);
 
-    SET_OFFSET(current_x, current_line);
+    SET_OFFSET(current_x + 2, current_line);
     SET_COLOR(color);
 
     const uint8_t width_offset = current_width - 4;
     const uint8_t string_len = strlen(string) - (count * 4);
     check_width = string_len;
 
-    SET_COLOR(RST); SET_COLOR(color); printf("|");
-
-    printf(" %s", string);
-    for (uint8_t i = 0; i < width_offset - string_len; i++) printf(" ");
+    printf("%s", string);
 
     SET_COLOR(WHT);
     SET_OFFSET(string_len + current_x + 3, current_line);
@@ -345,6 +355,48 @@ void draw_raw(  const uint8_t offset_x, const uint8_t offset_y,
     SET_COLOR(RST);
 
     SET_OFFSET(offset_x, offset_y);
+}
+
+void draw_dialog_confirmation(const char* format, ...){
+    char string[LEN_MAX];
+    va_list args;
+
+    va_start(args, format);
+    vsprintf(string, format, args);
+    va_end(args);
+
+    term_clean();
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 5);
+    if (status == false) return;
+
+    draw_box(TITLE, RED, "Confirmation Dialog");
+    draw_line(LEFT, RED, 1, RED"%s", string);
+    draw_decor(RED);
+    draw_input(RED, 1, YEL"(y/N):");
+    draw_end();
+}
+
+void draw_dialog_continue(const char* format, ...){
+    char string[LEN_MAX];
+    va_list args;
+
+    va_start(args, format);
+    vsprintf(string, format, args);
+    va_end(args);
+
+    term_clean();
+    SET_CURSOR(CURSOR_HIDE);
+
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+    if (status == false) return;
+
+    draw_box(TITLE, YEL, "Confirmation Dialog");
+    draw_line(CENTER, YEL, 1, YEL"%s", string);
+    draw_line(CENTER, YEL, 1, YEL_BG"Press enter to continue...");
+    draw_end();
+
+    while (getchar() != '\n');
+    SET_CURSOR(CURSOR_SHOW);
 }
 
 void screen_loading_mini(const uint8_t offset_x, const uint8_t offset_y, const uint16_t time){

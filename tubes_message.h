@@ -2,21 +2,13 @@
 #include <stdbool.h>
 #include <time.h>
 
+#include "tubes_database.h"
+
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
 #define PESAN_FILE      "message.tb"
 #define PESAN_FILE_TEMP "message.tb.tmp"
-
-typedef enum {
-    BROKER  = 0,
-    USER    = 1,
-} user_t;
-
-typedef struct {
-    char username[64];
-    char password[64];
-} data_t;
 
 typedef struct {
     char    nama[256];

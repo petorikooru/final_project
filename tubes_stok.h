@@ -31,6 +31,6 @@ typedef struct {
     char        status[20];
 } Order;
 
-bool display_stok_start();
+void display_stok_start();
 
 #endif

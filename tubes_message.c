@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include "tubes_database.h"
 #include "tubes_message.h"
 #include "tubes_handler.h"
 #include "tubes_interface.h"
@@ -189,12 +190,19 @@ void display_pesan_start(char *nama, user_t tipe){
 
         while(1){
             term_clean();
-            printf("=== CHAT MENU ===\n");
-            printf("1. Start Messaging!\n");
-            printf("2. Delete all of your message\n");
-            printf("3. Purge all of the messages\n");
-            printf("0. Exit Chat\n");
-            printf("Choice: ");
+
+            bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 8);
+            if (status == false) return;
+
+            draw_box(TITLE, BLU, "Chat Menu");
+            draw_line(LEFT, BLU, 0, "1. Mulai percakapan!");
+            draw_line(LEFT, BLU, 0, "2. Hapus hanya pesan dari anda");
+            draw_line(LEFT, BLU, 0, "3. Hapus seluruh percakapan");
+            draw_line(LEFT, BLU, 1, RED"0. Keluar");
+            draw_decor(BLU);
+            draw_input(BLU, 0, "Input:");
+            draw_end();
+
             input_number(&choice);
 
             switch (choice) {
@@ -210,7 +218,7 @@ void display_pesan_start(char *nama, user_t tipe){
                 case EXIT:
                     return;
                 default:
-                    print_err("Invalid choice!");
+                    log_print_err("Invalid choice!");
                     printf("Press Enter to continue...");
                     getchar();
             }
@@ -224,11 +232,18 @@ void display_pesan_start(char *nama, user_t tipe){
 
         while(1){
             term_clean();
-            printf("=== CHAT MENU ===\n");
-            printf("1. Start Messaging!\n");
-            printf("2. Clean all of your message\n");
-            printf("0. Exit Chat\n");
-            printf("Choice: ");
+
+            bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 7);
+            if (status == false) return;
+
+            draw_box(TITLE, BLU, "Chat Menu");
+            draw_line(LEFT, BLU, 0, "1. Mulai percakapan!");
+            draw_line(LEFT, BLU, 0, "2. Hapus hanya pesan dari anda");
+            draw_line(LEFT, BLU, 1, RED"0. Keluar");
+            draw_decor(BLU);
+            draw_input(BLU, 0, "Input:");
+            draw_end();
+
             input_number(&choice);
 
             switch (choice) {
@@ -237,13 +252,12 @@ void display_pesan_start(char *nama, user_t tipe){
                     break;
                 case CLEAR:
                     display_pesan_clear();
+                    log_print_err("asdf");
                     break;
                 case EXIT:
                     return;
                 default:
-                    print_err("Invalid choice!");
-                    printf("Press Enter to continue...");
-                    getchar();
+                    draw_dialog_continue("Pilihan tidak valid!");
             }
         }
     }
@@ -273,19 +287,18 @@ void display_pesan_clear(){
 
     char choice[MAX_STRLEN];
 
-    print_warn("Apa anda yakin membersihkan percakapan anda saja?");
-    printf(BLU"(y/N) :"RST);
+    draw_dialog_confirmation("Apa anda yakin ingin membersihkan percakapan anda?");
     input_string(choice);
 
     if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0) {
         pesan_clear(current_user, current_type);
-        print_info("Pesan berhasil dibersihkan!");
-        print_info("Press enter to continue...");
-        getchar();
+
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 5);
+        if (status == false) return;
+
+        draw_dialog_continue("Pesan berhasil dibersihkan!");
     } else {
-        print_info("Action terminated!");
-        print_info("Press enter to continue...");
-        getchar();
+        draw_dialog_continue("Aksi dibatalkan!");
     }
 }
 
@@ -294,20 +307,16 @@ void display_pesan_purge(){
 
     char choice[MAX_STRLEN];
 
-    print_warn("Apa anda yakin "RED"MENGHAPUS SELURUH"YEL" percakapan?");
-    printf(BLU"(y/N): "RST);
+    draw_dialog_confirmation("Apa anda yakin ingin MENGHAPUS SELURUH anda?");
     input_string(choice);
 
     if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0) {
         if (pesan_purge(current_user))
-            print_info("Pesan berhasil dihapus!");
+            draw_dialog_continue("Pesan berhasil dihapus!");
         else
-             print_err("Pesan gagal dihapus!");;
-        print_info("Press enter to continue...");
-        getchar();
+            draw_dialog_continue("Pesan gagal dihapus!");
     } else {
-        print_info("Action terminated!");
-        print_info("Press enter to continue...");
+        draw_dialog_continue("Aksi dibatalkan!");
         getchar();
     }
 }

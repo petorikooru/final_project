@@ -18,12 +18,55 @@ static void load_stok(Item *items, int *jmlh_brang);
 static void beli_barang(Item *items, int *jmlh_brang);
 static void simpan_pesanan(Order *order);
 
-bool display_stok_start(){
+void display_stok_start(){
     Item items[MAX_ITEMS];
     int jmlh_brang = 0;
-    load_stok(items, &jmlh_brang);
 
-    tampilkan_menu(items, jmlh_brang);
+    typedef enum {
+        M_LIHAT     = 1,
+        M_CARI      = 2,
+        M_BELI      = 3,
+        M_KELUAR    = 0,
+    } menu_t;
+    int choice;
+
+    while(1) {
+        term_clean();
+
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
+        if (status == false) return;
+
+        draw_box(TITLE, BLU, "Stok Menu");
+        draw_line(LEFT, BLU, 1, BLU"Pilih opsi yang anda inginkan!");
+        draw_decor(BLU);
+        draw_line(LEFT, BLU, 0, "1. Lihat Stok Barang");
+        draw_line(LEFT, BLU, 0, "2. Cari Barang");
+        draw_line(LEFT, BLU, 0, "3. Beli Barang");
+        draw_line(LEFT, BLU, 1, RED"0. Keluar");
+        draw_decor(BLU);
+        draw_input(BLU, 0, "Input:");
+        draw_end();
+
+        input_number(&choice);
+
+        switch(choice) {
+            case M_LIHAT:
+                // display_stok_lihat();
+                break;
+            case M_CARI:
+                // display_stok_cari();
+                break;
+            case M_BELI:
+                // display_stok_start();
+                break;
+            case M_KELUAR:
+                return;
+            default:
+                log_print_err("Invalid input! Press enter to continue...");
+                getchar();
+                break;
+        }
+    }
 }
 
 static void load_stok(Item *items, int *Jmlh_brang) {

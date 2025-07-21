@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "tubes_interface.h"
 #include "tubes_main.h"
@@ -14,7 +15,16 @@
 #include "tubes_stok.h"
 #include "tubes_admin.h"
 
+void display_end(int sig)
+{
+    term_clean();
+    exit(sig);
+}
+
 int main(int argc, char *argv[]){
+
+    signal(SIGINT, display_end);
+
     if (argc > 1) {
         if (strcmp(argv[1], "message") == 0) {
             term_clean();
@@ -114,8 +124,7 @@ void debug_message(){
             case M_EXIT:
                 return;
             default:
-                log_print_err("Invalid input! Press enter to continue...");
-                getchar();
+                draw_dialog_continue("Input tidak valid!");
                 break;
         }
     }
@@ -171,9 +180,9 @@ void display_utama(){
             case M_EXIT:
                 return;
             default:
-                log_print_err("Invalid input! Press enter to continue...");
-                getchar();
+                draw_dialog_continue("Input tidak valid!");
                 break;
         }
     }
+    display_end(SIGTERM);
 }
