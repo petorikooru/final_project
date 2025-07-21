@@ -13,6 +13,6 @@ typedef struct {
     char    orderStatus[MAX_ORDERS][MAX_LENGTH];
 } user_order_t;
 
-void display_manajemen_start();
+void display_user_start();
 
 #endif

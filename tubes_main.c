@@ -72,7 +72,7 @@ void debug_message(){
     while (true) {
         term_clean();
 
-        bool status = draw_init(1, 1, WIDTH, 8);
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 8);
         if (status == false) return;
 
         draw_box(TITLE, YEL, "Message Debug");
@@ -90,7 +90,7 @@ void debug_message(){
             case M_ADMIN:
                 term_clean()
 
-                draw_init(1, 1, WIDTH, 3);
+                draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
                 draw_box(TITLE, YEL, "Message Debug");
                 draw_input(YEL, 0, "User you want to chat: ");
                 draw_end();
@@ -102,7 +102,7 @@ void debug_message(){
             case M_USER:
                 term_clean()
 
-                draw_init(1, 1, WIDTH, 3);
+                draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
                 draw_box(TITLE, YEL, "Message Debug");
                 draw_input(YEL, 0, "Who are you: ");
                 draw_end();
@@ -126,7 +126,7 @@ void debug_order(){
 }
 
 void debug_manajemen(){
-    display_manajemen_start();
+    display_user_start();
 }
 
 void debug_admin(){
@@ -144,11 +144,11 @@ void display_utama(){
     while (true) {
         term_clean();
 
-        bool status = draw_init(1, 1, WIDTH, 11);
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
         if (status == false) return;
 
         draw_box(TITLE, BLU, "D'Milsurp");
-        draw_line(LEFT, BLU, 1, BLU"Selamat datang di D'Milsurp, dimana anda dapat");
+        draw_line(LEFT, BLU, 3, BLU"Selamat datang di "CYN"D'Milsurp"BLU", dimana anda dapat");
         draw_line(LEFT, BLU, 1, BLU"membeli barang permainan yang menyenangkan!");
         draw_line(LEFT, BLU, 1, MAG"Silahkan pilih menu dibawah!");
         draw_decor(BLU);
@@ -156,14 +156,14 @@ void display_utama(){
         draw_line(LEFT, BLU, 0, "2. Pergi ke menu ADMIN");
         draw_line(LEFT, BLU, 1, RED"0. Keluar");
         draw_decor(BLU);
-        draw_input(BLU, 0, "Input: ");
+        draw_input(BLU, 0, "Input:");
         draw_end();
 
         input_number(&choice);
 
         switch(choice) {
             case M_USER:
-                display_manajemen_start();
+                display_user_start();
                 break;
             case M_ADMIN:
                 log_print_todo("Admin login page");

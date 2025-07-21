@@ -15,7 +15,7 @@ static struct tm    *current_timestamp;
 static user_t       current_type;
 static pesan_t      pesan;
 static FILE         *pesan_ptr;
-static bool         end = false;
+static bool         end;
 
 bool pesan_init(){
     pesan_ptr       = fopen(PESAN_FILE, "ab+");
@@ -24,7 +24,7 @@ bool pesan_init(){
         pesan_ptr   = fopen(PESAN_FILE, "wb+");
     }
     if (pesan_ptr == NULL) {
-        print_err("Cannot create or open the file!");
+        log_print_err("Cannot create or open the file!");
         return false;
     }
     end = false;
@@ -34,7 +34,7 @@ bool pesan_init(){
 
 void pesan_print(){
     if (pesan_ptr == NULL) {
-        print_err("Do the \"pesan_init()\" first!");
+        log_print_err("Do the \"pesan_init()\" first!");
         return;
     }
 
@@ -44,10 +44,17 @@ void pesan_print(){
     while(fread(&pesan, sizeof(pesan_t), 1, pesan_ptr) == 1) {
         if (strcmp(current_user, pesan.nama) == 0) {
             pesan_exist = true;
-            if (pesan.whois == BROKER)
-                printf(GRY"%s"MAG"Broker"RST": %s\n", pesan.timestamp, pesan.teks);
-            else
-                printf(GRY"%s"BLU"You"RST": %s\n", pesan.timestamp, pesan.teks);
+            if (current_type == BROKER){
+                if (pesan.whois == BROKER)
+                    printf(GRY"%s"BLU"You"RST": %s\n", pesan.timestamp, pesan.teks);
+                else
+                    printf(GRY"%s"MAG"%s"RST": %s\n", pesan.timestamp, pesan.nama, pesan.teks);;
+            } else {
+                if (pesan.whois == BROKER)
+                    printf(GRY"%s"MAG"Broker"RST": %s\n", pesan.timestamp, pesan.teks);
+                else
+                    printf(GRY"%s"BLU"You"RST": %s\n", pesan.timestamp, pesan.teks);;
+            }
         }
     }
 
@@ -57,7 +64,7 @@ void pesan_print(){
 
 void pesan_kirim(const char *teks){
     if (pesan_ptr == NULL) {
-        print_err("Do the \"pesan_init()\" first!");
+        log_print_err("Do the \"pesan_init()\" first!");
         return;
     }
 
@@ -83,7 +90,7 @@ void pesan_kirim(const char *teks){
 
 bool pesan_clear(const char *nama, const user_t type){
     if (pesan_ptr != NULL) {
-        print_err("Please end the pesan chain first!");
+        log_print_err("Please end the pesan chain first!");
         return false;
     }
 
@@ -107,7 +114,7 @@ bool pesan_clear(const char *nama, const user_t type){
 
 bool pesan_purge(const char *nama){
     if (pesan_ptr != NULL) {
-        print_err("Please end the pesan chain first!");
+        log_print_err("Please end the pesan chain first!");
         return false;
     }
 

@@ -1,5 +1,10 @@
 # Final Project (-ish)
 
+# Note
+If you are using windows, you have to enable Unicode support for terminal or else the characters/symbols will not show properly!
+
+How to enable: https://superuser.com/a/1435645
+
 # Compile
 ## Using makefile
 ```

@@ -59,6 +59,14 @@
 #define CURSOR_HOME     "\e[H"
 
 typedef enum {
+    TOP_LEFT,
+    TOP_CENTER,
+    CENTER_LEFT,
+    CENTER_CENTER,
+    RAW,
+} offset_t;
+
+typedef enum {
     TITLE,
     PLAIN,
 } box_t;
@@ -69,20 +77,16 @@ typedef enum {
     RIGHT,
 } align_t;
 
-/* ====================================== NEW IMPLEMENTATION ====================================== */
-
 /*
  * Initialize terminal drawing stuff.
  *
- * offset_x : x cordinate position
- *
- * offset_y : y cordinate position
- *
- * width    : drawable width size
- *
+ * type     : where do you want to draw (option other than RAW will ignore offset_x and offset_y) |
+ * offset_x : x cordinate position |
+ * offset_y : y cordinate position |
+ * width    : drawable width size |
  * height   : drawable height size
  */
-bool draw_init( const uint8_t offset_x, const uint8_t offset_y,
+bool draw_init( const offset_t type, const uint8_t offset_x, const uint8_t offset_y,
                 const uint8_t width, const uint8_t height);
 
 /*
@@ -93,10 +97,8 @@ void draw_end();
 /*
  * Draw a box
  *
- * type     : type of box it will generates (PLAIN, TITLE)
- *
- * color    : the color of the box
- *
+ * type     : type of box it will generates (PLAIN, TITLE) |
+ * color    : the color of the box |
  * format   : "%s" "%i" stuff, just insert the text here or something
  */
 void draw_box(const box_t type, const char* color, const char* format, ...);
@@ -104,12 +106,9 @@ void draw_box(const box_t type, const char* color, const char* format, ...);
 /*
  * Draw a line with text
  *
- * alig     : alignment type (LEFT, CENTER, RIGHT)
- *
- * color    : the color of the box
- *
- * count    : number of color uses in the string (RED, BLUE, etc...)
- *
+ * alig     : alignment type (LEFT, CENTER, RIGHT) |
+ * color    : the color of the box |
+ * count    : number of color uses in the string (RED, BLUE, etc...) |
  * format   : "%s" "%i" stuff, just insert the text here or something
  */
 void draw_line(const align_t align, const char* color, const uint8_t count, const char* format, ...);
@@ -117,12 +116,9 @@ void draw_line(const align_t align, const char* color, const uint8_t count, cons
 /*
  * Draw a line with text, but as a user input
  *
- * alig     : alignment type (LEFT, CENTER, RIGHT)
- *
- * color    : the color of the box
- *
- * count    : number of color uses in the string (RED, BLUE, etc...)
- *
+ * alig     : alignment type (LEFT, CENTER, RIGHT) |
+ * color    : the color of the box |
+ * count    : number of color uses in the string (RED, BLUE, etc...) |
  * format   : "%s" "%i" stuff, just insert the text here or something
  */
 void draw_input(const char* color, const uint8_t count, const char* format, ...);
@@ -141,104 +137,21 @@ void draw_decor(const char* color);
  */
 void draw_change_current_line(uint8_t newline);
 
-/* ====================================== OLD IMPLEMENTATION ====================================== */
 /*
-    Draw a text in (x, y) coordinate as you wish
-
-    offset_x : x cordinate position
-    offset_y : y cordinate position
-    color    : box's color
-    format   : the text format ("%s", "%d", etc.)
-    ...      : contents
-*/
-void screen_draw_raw(const uint8_t offset_x, const uint8_t offset_y,
-                     const char* color, const char* format, ...);
-
-/*
-    Draw a plain box in your terminal screen
-
-    offset_x : x cordinate position
-    offset_y : y cordinate position
-    size_x   : box's width
-    size_y   : box's height
-    color    : box's color
-*/
-void screen_draw_box(const uint8_t offset_x, const uint8_t offset_y,
-                     const uint8_t size_x, const uint8_t size_y,
-                     const char* color);
-
-/*
-    Draw a identifiable box in your terminal screen
-
-    offset_x : x cordinate position
-    offset_y : y cordinate position
-    size_x   : box's width
-    size_y   : box's height
-    title    : box's title
-    color    : box's color
-*/
-void screen_draw_box_title(const uint8_t offset_x, const uint8_t offset_y,
-                           const uint8_t size_x, const uint8_t size_y,
-                           const char* title, const char* color);
-
-/*
-    Draw a line segment of the box with contents
-
-    offset_x : x cordinate position
-    offset_y : y cordinate position
-    size_x   : line's width
-    string   : contents
-    string_color    : contents's color
-    border_color    : box's color
-*/
-void screen_draw_line(const uint8_t offset_x, const uint8_t offset_y,
-                      const uint8_t size_x, const char* string,
-                      const char* string_color, const char* border_color);
-
-/*
-    Draw a line segment of the box with contents, but as an input
-    for the user
-
-    offset_x : x cordinate position
-    offset_y : y cordinate position
-    size_x   : line's width
-    string   : contents
-    string_color    : contents's color
-    border_color    : box's color
-*/
-void screen_draw_line_input(const uint8_t offset_x, const uint8_t offset_y,
-                            const uint8_t size_x, const char* string,
-                            const char* string_color, const char* border_color);
-
-/*
-    Draw a line segment of the box with contents centered
-
-    offset_x : x cordinate position
-    offset_y : y cordinate position
-    size_x   : line's width
-    string   : contents
-    string_color    : contents's color
-    border_color    : box's color
-*/
-void screen_draw_line_center(const uint8_t offset_x, const uint8_t offset_y,
-                             const uint8_t size_x, const char *string,
-                             const char *string_color, const char *border_color);
-
-/*
-    Draw the top/bottom side of the box
-
-    offset_x : x cordinate position
-    offset_y : y cordinate position
-    size_x   : line's width
-    border_color    : box's color
-*/
-void screen_draw_line_decor(const uint8_t offset_x, const uint8_t offset_y,
-                            const uint8_t size_x, const char* border_color);
+ * Initialize terminal drawing stuff.
+ *
+ * offset_x : x cordinate position |
+ * offset_y : y cordinate position |
+ * color    : the color of the content |
+ * format   : "%s" "%i" stuff, just insert the text here or something
+ */
+void draw_raw(  const uint8_t offset_x, const uint8_t offset_y,
+                const char* color, const char* format, ...);
 
 /*
     Draw the minified loading bar (just for decoration though)
 
-    offset_x : x cordinate position
+    offset_x : x cordinate position |
     offset_y : y cordinate position
 */
 void screen_loading_mini(const uint8_t offset_x, const uint8_t offset_y, const uint16_t time);

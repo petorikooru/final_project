@@ -3,34 +3,13 @@
 #include <string.h>
 
 #include "tubes_manajemen.h"
+#include "tubes_interface.h"
 #include "tubes_handler.h"
 #include "tubes_input.h"
 
+static char current_user[MAX_STRLEN];
 static user_order_t users[MAX_USERS];
 int userCount = 0;
-
-int registerUser () {
-    term_clean();
-    if(userCount >= MAX_USERS) {
-        printf("Batas user telah tercapai!\n");
-        system("pause");
-        return -1;
-    }
-
-    printf("=== REGISTRASI USER BARU ===\n");
-    printf("Masukkan username: ");
-    fgets(users[userCount].username, MAX_LENGTH, stdin);
-    users[userCount].username[strcspn(users[userCount].username, "\n")] = '\0';
-    printf("Masukkan password: ");
-    fgets(users[userCount].password, MAX_LENGTH, stdin);
-    users[userCount].password[strcspn(users[userCount].password, "\n")] = '\0';
-
-    users[userCount].orderCount = 0;
-    userCount++;
-    printf("\nRegistrasi berhasil!\n");
-    system("pause");
-    return 1;
-}
 
 int loginUser () {
     term_clean();
@@ -118,66 +97,162 @@ void tambahPesanan(int userIndex) {
     system("pause");
 }
 
-void display_manajemen_start() {
+void display_user_add(){
+
+}
+
+void display_user_status(){
+
+}
+
+void display_user_profile(){
+
+}
+
+void display_user_menu() {
+    typedef enum {
+        M_PROFIL    = 1,
+        M_STATUS    = 2,
+        M_TAMBAH    = 3,
+        M_LOGOUT    = 0,
+    } menu_t;
     int choice;
-    int loggedInUser  = -1;
 
     while(1) {
         term_clean();
-        if(loggedInUser  == -1) {
-            printf("=== MENU UTAMA USER ===\n");
-            printf("1. Registrasi\n");
-            printf("2. Login\n");
-            printf("3. Keluar\n");
-            printf("Pilihan: ");
-            scanf("%d", &choice);
-            getchar();
 
-            switch(choice) {
-                case 1:
-                    registerUser ();
-                    break;
-                case 2:
-                    loggedInUser  = loginUser ();
-                    break;
-                case 3:
-                    printf("Terimakasih telah menggunakan D'Milsurp!");
-                    exit(0);
-                default:
-                    printf("Pilihan tidak valid\n");
-                    system("pause");
-            }
-        } else {
-            printf("SELAMAT DATANG DI D'MILSURP, %s!\n", users[loggedInUser ].username);
-            printf("1. Lihat Profil\n");
-            printf("2. Update Status Pesanan\n");
-            printf("3. Tambah Pesanan\n");
-            printf("4. Logout\n");
-            printf("Pilih opsi: ");
-            scanf("%d", &choice);
-            getchar();
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
+        if (status == false) return;
 
-            switch(choice) {
-                case 1:
-                    lihatProfile(loggedInUser );
-                    break;
-                case 2:
-                    updateStatusPesanan(loggedInUser );
-                    break;
-                case 3:
-                    tambahPesanan(loggedInUser );
-                    break;
-                case 4:
-                    loggedInUser  = -1;
-                    printf("Anda telah logout, terimakasih telah menggunakan D'Milsurp!\n");
-                    system("pause");
-                    break;
-                default:
-                    printf("Pilihan tidak valid! coba lagi.\n");
-                    system("pause");
-            }
+        draw_box(TITLE, BLU, "User Menu");
+        draw_line(LEFT, BLU, 5, BLU"Selamat datang di "MAG"D'Milsurp"RST", "GRN"%s"RST, current_user);
+        draw_line(LEFT, BLU, 1, BLU"Pilih menu dibawa untuk memulai memesan orderan!");
+        draw_decor(BLU);
+        draw_line(LEFT, BLU, 0, "1. Lihat Profil");
+        draw_line(LEFT, BLU, 0, "2. Update Status Pesanan");
+        draw_line(LEFT, BLU, 0, "3. Tambah Pesanan");
+        draw_line(LEFT, BLU, 1, RED"0. Logout");
+        draw_decor(BLU);
+        draw_input(BLU, 0, "Input:");
+        draw_end();
+
+        input_number(&choice);
+
+        switch(choice) {
+            case M_PROFIL:
+                display_user_profile();
+                break;
+            case M_STATUS:
+                display_user_status();
+                break;
+            case M_TAMBAH:
+                display_user_add();
+                break;
+            case M_LOGOUT:
+                memset(current_user, 0, MAX_STRLEN);
+                return;
+            default:
+                log_print_err("Invalid input! Press enter to continue...");
+                getchar();
+                break;
         }
     }
+}
 
-    return;
+void display_user_register(){
+    typedef enum {
+        C_SUCCESS,
+        C_FAILED,
+    } choice_t;
+    char username[MAX_STRLEN];
+    char password[MAX_STRLEN];
+
+    term_clean();
+
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+    if (status == false) return;
+
+    draw_box(TITLE, BLU, "Registrasi User");
+    draw_line(LEFT, BLU, 1, BLU"Username:");
+    draw_line(LEFT, BLU, 1, BLU"Password:");
+
+    draw_change_current_line(1);
+    draw_input(BLU, 1, BLU"Username:");
+    input_string(username);
+    draw_input(BLU, 1, BLU"Password:");
+    input_string(password);
+
+    draw_end();
+}
+
+void display_user_login(){
+    typedef enum {
+        C_SUCCESS,
+        C_FAILED,
+    } choice_t;
+    char username[MAX_STRLEN];
+    char password[MAX_STRLEN];
+
+    term_clean();
+
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+    if (status == false) return;
+
+    draw_box(TITLE, BLU, "Login User");
+    draw_line(LEFT, BLU, 1, BLU"Username:");
+    draw_line(LEFT, BLU, 1, BLU"Password:");
+
+    draw_change_current_line(1);
+    draw_input(BLU, 1, BLU"Username:");
+    input_string(username);
+    draw_input(BLU, 1, BLU"Password:");
+    input_string(password);
+
+    strncpy(current_user, username, MAX_STRLEN);
+    display_user_menu();
+
+    draw_end();
+}
+
+void display_user_start() {
+    typedef enum {
+        M_LOGIN       = 1,
+        M_REGISTER    = 2,
+        M_EXIT        = 0,
+    } menu_t;
+    int choice;
+
+    while(1) {
+        term_clean();
+
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 9);
+        if (status == false) return;
+
+        draw_box(TITLE, BLU, "User Page");
+        draw_line(LEFT, BLU, 1, BLU"Pilih opsi dibawa ya...");
+        draw_decor(BLU);
+        draw_line(LEFT, BLU, 0, "1. Login User");
+        draw_line(LEFT, BLU, 0, "2. Registrasi User");
+        draw_line(LEFT, BLU, 1, RED"0. Keluar");
+        draw_decor(BLU);
+        draw_input(BLU, 0, "Input:");
+        draw_end();
+
+        input_number(&choice);
+
+        switch(choice) {
+            case M_LOGIN:
+                display_user_login();
+                break;
+            case M_REGISTER:
+                display_user_register();
+                break;
+            case M_EXIT:
+                return;
+            default:
+                log_print_err("Invalid input! Press enter to continue...");
+                getchar();
+                break;
+        }
+    }
 }
