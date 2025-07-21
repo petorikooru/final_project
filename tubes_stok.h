@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include "tubes_handler.h"
+#include "tubes_database.h"
 
 #ifndef STOK_H
 #define STOK_H
@@ -17,6 +18,6 @@ typedef struct {
     uint32_t        harga;
 } product_t;
 
-void display_stok_start();
+void display_stok_start(data_t *user);
 
 #endif

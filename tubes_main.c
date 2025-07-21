@@ -33,13 +33,6 @@ int main(int argc, char *argv[]){
             debug_message();
 
             log_print_info("Exiting message debug mode...");
-        } else if (strcmp(argv[1], "order") == 0) {
-            term_clean();
-            print_info("Entering order debug mode...");
-            sleep(1); fflush(stdout);
-            debug_order();
-
-            log_print_info("Exiting message debug mode...");
         } else if (strcmp(argv[1], "manajemen") == 0) {
             term_clean();
             print_info("Entering manajemen debug mode...");
@@ -58,8 +51,7 @@ int main(int argc, char *argv[]){
             printf(
                 "Usage: ./tubes.bin <debug_mode>\n"
                 "+ message\t: Run message debug mode \n"
-                "+ order\t\t: Run order debug mode \n"
-                "+ manajemen\t: Run manajemen debug mode \n"
+                "+ user\t: Run manajemen debug mode \n"
                 "+ admin\t\t: Run admin debug mode \n"
                 "No argument: Run normal mode \n"
             );
@@ -128,10 +120,6 @@ void debug_message(){
                 break;
         }
     }
-}
-
-void debug_order(){
-    display_stok_start();
 }
 
 void debug_manajemen(){

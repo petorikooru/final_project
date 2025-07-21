@@ -31,6 +31,7 @@ void display_admin_stock_delete();
 void display_admin_order();
 void display_admin_order_view();
 void display_admin_order_process();
+void display_admin_order_delete();
 
 void display_admin_message();
 
@@ -242,7 +243,7 @@ void display_admin_user_view(){
     FILE* database_file = fopen(DATABASE_FILE, "rb");
     data_t* user = malloc(sizeof(data_t));
     bool found = false;
-    // Check whether the file exist or not
+
     if (!database_file){
         draw_dialog_err("File doesn't exist!");
     }
@@ -260,10 +261,10 @@ void display_admin_user_view(){
             draw_box(TITLE_NOBOX, MAG, "Lihat User");
             draw_line(LEFT, MAG, 0, "Nama User\t: %s", user->username);
             draw_line(LEFT, MAG, 0, "Status\t\t: %s", (user->banned) ? "Ban" : "Aman");
-            draw_line(LEFT, MAG, 0, "Jumlah terorder\t: %i", user->order.orderCount);
+            draw_line(LEFT, MAG, 0, "Jumlah terorder: %i", user->order.orderCount);
             draw_line(LEFT, MAG, 0, "Orderan\t:");
             for (int i = 0; i < user->order.orderCount; i++){
-                draw_line(LEFT, MAG, 0, "%2i. %20s : %10s",
+                draw_line(LEFT, MAG, 0, "%2i. %s : %s",
                     i + 1, user->order.orders[i], user->order.orderStatus[i]
                 );
             }
@@ -357,6 +358,7 @@ void display_admin_user_delete() {
     }
 
     if (is_deleted) {
+        pesan_purge(username);
         remove(DATABASE_FILE);
         rename(temp_file, DATABASE_FILE);
         draw_dialog_info("User berhasil dihapus!");
@@ -468,6 +470,7 @@ void display_admin_order(){
     typedef enum {
         M_VIEW      = 1,
         M_PROCESS   = 2,
+        M_DELETE    = 3,
         M_EXIT      = 0,
     } menu_t;
     int choice;
@@ -475,7 +478,7 @@ void display_admin_order(){
     while (true) {
         term_clean();
 
-        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 10);
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
         if (status == false) return;
 
         draw_box(TITLE, MAG, "Broker Menu");
@@ -484,6 +487,7 @@ void display_admin_order(){
         draw_decor(MAG);
         draw_line(LEFT, MAG, 0, "1. Lihat barang yang terorder");
         draw_line(LEFT, MAG, 0, "2. Proses orderan user");
+        draw_line(LEFT, MAG, 0, "3. Hapus orderan user");
         draw_line(LEFT, MAG, 1, RED"0. Keluar");
         draw_decor(MAG);
         draw_input(MAG, 0, "Input:");
@@ -497,6 +501,9 @@ void display_admin_order(){
                 break;
             case M_PROCESS:
                 display_admin_order_process();
+                break;
+            case M_DELETE:
+                display_admin_order_delete();
                 break;
             case M_EXIT:
                 return;
@@ -547,7 +554,7 @@ void display_admin_order_view(){
     return;
 }
 
-void display_admin_order_process() {
+void display_admin_order_process(){
     term_clean();
 
     char username[MAX_STRLEN]   = {0};
@@ -611,7 +618,7 @@ void display_admin_order_process() {
                     draw_box(TITLE_NOBOX, MAG, "Proses Orderan User");
                     draw_line(LEFT, MAG, 0, "Nama User\t: %s", user.username);
                     draw_line(LEFT, MAG, 0, "Nama Orderan\t: %s", user.order.orders[j]);
-                    draw_line(LEFT, MAG, 0, "Alamat\t: %s", user.order.alamat[j]);
+                    draw_line(LEFT, MAG, 0, "Alamat\t\t: %s", user.order.alamat[j]);
                     draw_line(LEFT, MAG, 0, "Nomor Telepon\t: %s", user.order.telepon[j]);
                     draw_line(LEFT, MAG, 0, "Status Orderan\t: %s", user.order.orderStatus[j]);
                     draw_input(MAG, 0, "Ganti status: ");
@@ -641,6 +648,98 @@ void display_admin_order_process() {
     }
 
     fclose(database_file);
+}
+
+void display_admin_order_delete() {
+    term_clean();
+
+    char username[MAX_STRLEN] = {0};
+    char order_name[MAX_STRLEN] = {0};
+    char certainty[MAX_STRLEN] = {0};
+    bool user_found = false;
+    bool order_found = false;
+
+    draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
+    draw_box(TITLE, MAG, "Hapus Order User");
+    draw_input(MAG, 1, MAG"Username:");
+    draw_end();
+
+    input_string(username);
+
+    FILE* database_file = fopen(DATABASE_FILE, "rb+");
+    if (!database_file) {
+        draw_dialog_err("Database tidak ditemukan!");
+        return;
+    }
+
+    data_t user;
+    bool update_success = false;
+
+    while(fread(&user, sizeof(data_t), 1, database_file) == 1) {
+        if (strcmp(user.username, username) == 0) {
+            user_found = true;
+
+            if (user.order.orderCount == 0) {
+                draw_dialog_err("User tidak memiliki orderan!");
+                break;
+            }
+
+            term_clean();
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, user.order.orderCount + 5);
+            draw_box(TITLE, MAG, "Daftar Order User");
+            draw_line(LEFT, MAG, 0, "Orderan %s:", username);
+
+            for (int i = 0; i < MAX_ORDERS; i++) {
+                if (strlen(user.order.orders[i]) > 0) {
+                    draw_line(LEFT, MAG, 0, "%d. %s - %s",
+                            i+1,
+                            user.order.orders[i],
+                            user.order.orderStatus[i]);
+                }
+            }
+            draw_decor(MAG);
+            draw_input(MAG, 1, MAG"Pilih order (nomor):");
+            draw_end();
+
+            input_string(order_name);
+            int order_num = atoi(order_name) - 1;
+
+            if (order_num < 0 || order_num >= MAX_ORDERS ||
+                strlen(user.order.orders[order_num]) == 0) {
+                draw_dialog_err("Pilihan order tidak valid!");
+                break;
+            }
+
+            draw_dialog_confirmation("Hapus order '%s'?",
+                                    user.order.orders[order_num]);
+            input_string(certainty);
+
+            if (strcasecmp(certainty, "y") == 0) {
+                memset(&user.order.orders[order_num], 0, MAX_STRLEN);
+                memset(&user.order.orderStatus[order_num], 0, MAX_STRLEN);
+                memset(&user.order.alamat[order_num], 0, MAX_STRLEN);
+                memset(&user.order.telepon[order_num], 0, MAX_STRLEN);
+                user.order.orderCount--;
+
+                fseek(database_file, -sizeof(data_t), SEEK_CUR);
+                if (fwrite(&user, sizeof(data_t), 1, database_file) == 1) {
+                    update_success = true;
+                    draw_dialog_info("Order berhasil dihapus!");
+                } else {
+                    draw_dialog_err("Gagal menyimpan perubahan!");
+                }
+            } else {
+                draw_dialog_info("Penghapusan dibatalkan");
+            }
+            break;
+        }
+    }
+
+    fclose(database_file);
+
+    if (!user_found) {
+        draw_dialog_err("User tidak ditemukan!");
+    }
 }
 
 void display_admin_stock(){
@@ -889,7 +988,7 @@ void display_admin_message(){
 
     char username[MAX_STRLEN];
 
-    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
     if (status == false) return;
 
     draw_box(TITLE, MAG, "Kirim Pesan");

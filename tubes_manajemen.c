@@ -11,74 +11,136 @@
 #include "tubes_stok.h"
 
 static char current_user[MAX_STRLEN];
+static data_t data;
 
 void display_user_init(data_t *user){
     strncpy(current_user, user->username, MAX_STRLEN);
-}
-
-void lihatProfile(int userIndex) {
-    // term_clean();
-    // printf("=== PROFIL USER ===\n");
-    // printf("Username: %s\n", users[userIndex].username);
-    // printf("--- RIWAYAT PESANAN ---\n");
-    // if(users[userIndex].orderCount == 0) {
-    //     printf("Belum ada pesanan...\n");
-    // } else {
-    //     for(int i = 0; i < users[userIndex].orderCount; i++) {
-    //         printf("%d. %s - Status: %s\n", i+1, users[userIndex].orders[i], users[userIndex].orderStatus[i]);
-    //     }
-    // }
-    // system("pause");
-}
-
-void updateStatusPesanan(int userIndex) {
-    // int orderNum;
-    // char newStatus[MAX_LENGTH];
-    // term_clean();
-    // if(users[userIndex].orderCount == 0) {
-    //     printf("Belum ada pesanan untuk diupdate.\n");
-    //     system("pause");
-    //     return;
-    // }
-
-    // printf("=== UPDATE STATUS PESANAN ===\n");
-    // printf("Daftar pesanan Anda:\n");
-    // for(int i = 0; i < users[userIndex].orderCount; i++) {
-    //     printf("%d. %s - Status: %s\n", i+1, users[userIndex].orders[i], users[userIndex].orderStatus[i]);
-    // }
-
-    // printf("Masukkan status pesanan baru: ");
-    // fgets(newStatus, MAX_LENGTH, stdin);
-    // newStatus[strcspn(newStatus, "\n")] = '\0';
-    // strcpy(users[userIndex].orderStatus[orderNum-1], newStatus);
-    // printf("Status pesanan berhasil diupdate!\n");
-    // system("pause");
-}
-
-void tambahPesanan(int userIndex) {
-    // term_clean();
-    // if(users[userIndex].orderCount >= MAX_ORDERS) {
-    //     printf("Batas pesanan telah tercapai\n");
-    //     system("pause");
-    //     return;
-    // }
-
-    // printf("=== PESANAN BARU ===\n");
-    // printf("Keterangan pesanan: ");
-    // fgets(users[userIndex].orders[users[userIndex].orderCount], MAX_LENGTH, stdin);
-    // users[userIndex].orders[users[userIndex].orderCount][strcspn(users[userIndex].orders[users[userIndex].orderCount], "\n")] = '\0';
-    // strcpy(users[userIndex].orderStatus[users[userIndex].orderCount], "Pending");
-    // users[userIndex].orderCount++;
-    // printf("Pesanan berhasil ditambahkan!\n");
-    // system("pause");
+    data = *user;
 }
 
 void display_user_status(){
+    term_clean();
 
+    char new_status[MAX_STRLEN] = {0};
+    char order[MAX_STRLEN] = {0};
+    bool found_order = false;
+
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
+    if (!status) return;
+
+    FILE* database_file = fopen(DATABASE_FILE, "rb+");
+    if (!database_file) {
+        draw_dialog_err("Database tidak ditemukan!");
+        return;
+    }
+
+    data_t user;
+    bool update_success = false;
+
+    while(fread(&user, sizeof(data_t), 1, database_file) == 1) {
+        if (strcmp(user.username, current_user) == 0) {
+            if (user.order.orderCount == 0) {
+                draw_dialog_err("User tidak memiliki orderan!");
+                break;
+            }
+
+            term_clean();
+            status = draw_init(TOP_CENTER, 1, 1, WIDTH, 3);
+            if (!status) {
+                fclose(database_file);
+                return;
+            }
+
+            draw_box(TITLE_NOBOX, MAG, "Proses Orderan User");
+            draw_input(MAG, 0, "Pilih orderan:");
+            draw_end();
+
+            input_string(order);
+
+            for (int j = 0; j < user.order.orderCount; j++) {
+                if (strcmp(order, user.order.orders[j]) == 0) {
+                    found_order = true;
+
+                    term_clean();
+                    status = draw_init(TOP_CENTER, 1, 1, WIDTH, 7);
+                    if (!status) {
+                        fclose(database_file);
+                        return;
+                    }
+
+                    draw_box(TITLE_NOBOX, MAG, "Proses Orderan User");
+                    draw_line(LEFT, MAG, 0, "Nama Orderan\t: %s", user.order.orders[j]);
+                    draw_line(LEFT, MAG, 0, "Alamat\t: %s", user.order.alamat[j]);
+                    draw_line(LEFT, MAG, 0, "Nomor Telepon\t: %s", user.order.telepon[j]);
+                    draw_line(LEFT, MAG, 0, "Status Orderan\t: %s", user.order.orderStatus[j]);
+                    draw_input(MAG, 0, "Ganti status: ");
+                    draw_end();
+
+                    input_string(new_status);
+
+                    strncpy(user.order.orderStatus[j], new_status, MAX_STRLEN);
+
+                    fseek(database_file, -sizeof(data_t), SEEK_CUR);
+                    fwrite(&user, sizeof(data_t), 1, database_file);
+
+                    draw_dialog_info("Status order berhasil diupdate!");
+                    break;
+                }
+            }
+
+            if (!found_order) {
+                draw_dialog_err("Kamu tidak memiliki orderan tersebut!");
+            }
+            break;
+        }
+    }
+    fclose(database_file);
 }
 
 void display_user_profile(){
+    term_clean();
 
+    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
+    if (status == false) return;
+
+    FILE* database_file = fopen(DATABASE_FILE, "rb");
+    data_t* user = malloc(sizeof(data_t));
+    bool found = false;
+
+    if (!database_file){
+        draw_dialog_err("File doesn't exist!");
+    }
+
+    while(fread(user, sizeof(data_t), 1, database_file) == 1){
+        if (strcmp(user->username, current_user) == 0) {
+
+            term_clean();
+
+            char username[MAX_STRLEN];
+
+            bool status = draw_init(TOP_CENTER, 1, 1, WIDTH, 3);
+            if (status == false) return;
+
+            draw_box(TITLE_NOBOX, MAG, "Profil User");
+            draw_line(LEFT, MAG, 0, "Nama User\t: %s", user->username);
+            draw_line(LEFT, MAG, 0, "Status\t\t: %s", (user->banned) ? "Ban" : "Aman");
+            draw_line(LEFT, MAG, 0, "Jumlah terorder: %i", user->order.orderCount);
+            draw_line(LEFT, MAG, 0, "Orderan\t:");
+            for (int i = 0; i < user->order.orderCount; i++){
+                draw_line(LEFT, MAG, 0, "%2i. %s : %s",
+                    i + 1, user->order.orders[i], user->order.orderStatus[i]
+                );
+            }
+            draw_line(CENTER, MAG, 1, MAG_BG" Press enter to continue... ");
+            draw_end();
+            getchar();
+        }
+    }
+
+    free(user);
+    fclose(database_file);
+
+    return;
 }
 
 void display_user_menu() {
@@ -120,10 +182,11 @@ void display_user_menu() {
                 display_user_status();
                 break;
             case M_TAMBAH:
-                display_stok_start();
+                display_stok_start(&data);;
                 break;
             case M_PESAN:
                 display_pesan_start(current_user, USER);
+                break;
             case M_LOGOUT:
                 memset(current_user, 0, MAX_STRLEN);
                 return;
@@ -241,7 +304,7 @@ void display_user_start() {
         switch(choice) {
             case M_LOGIN:
                 display_user_login();
-                break;
+                return;
             case M_REGISTER:
                 display_user_register();
                 break;
