@@ -78,7 +78,6 @@ void pesan_kirim(const char *teks){
     strncpy(pesan.nama, current_user, MAX_STRLEN);
     strncpy(pesan.timestamp, asctime(current_timestamp), MAX_STRLEN);
 
-
     if (current_type == BROKER) {
         pesan.whois = BROKER;
     } else {
@@ -218,9 +217,7 @@ void display_pesan_start(char *nama, user_t tipe){
                 case EXIT:
                     return;
                 default:
-                    log_print_err("Invalid choice!");
-                    printf("Press Enter to continue...");
-                    getchar();
+                    draw_dialog_err("Input tidak valid!");
             }
         }
     } else {
@@ -257,7 +254,7 @@ void display_pesan_start(char *nama, user_t tipe){
                 case EXIT:
                     return;
                 default:
-                    draw_dialog_continue("Pilihan tidak valid!");
+                    draw_dialog_err("Input tidak valid!");
             }
         }
     }

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #include "tubes_stok.h"
 #include "tubes_input.h"
@@ -9,17 +10,10 @@
 #include "tubes_interface.h"
 #include "tubes_database.h"
 
-static void tampilkan_menu(product_t *items, int jmlh_brang);
-static void liat_stok(product_t *items, int jmlh_brang);
-static void cari_item(product_t *items, int jmlh_brang);
-static void sort_nama(product_t *items, int jmlh_brang);
-static void sort_harga(product_t *items, int jmlh_brang);
-static void sort_jmlh(product_t *items, int jmlh_brang);
-static void load_stok(product_t *items, int *jmlh_brang);
+#define NOMOR_REKENING "707563602600"
+#define NAMA_BANK "CIMB NIAGA"
+#define ATAS_NAMA "DAFFA RIZQY ANDIKA"
 
-//prototipe unik
-static void beli_barang(product_t *items, int *jmlh_brang);
-static void simpan_pesanan(product_t *order);
 
 void display_stok_cari();
 
@@ -29,6 +23,10 @@ void display_stok_view();
 void display_stok_view_name();
 void display_stok_view_number();
 void display_stok_view_price();
+
+static void sort_nama(product_t *items, int jmlh_brang);
+static void sort_harga(product_t *items, int jmlh_brang);
+static void sort_jumlah(product_t *items, int jmlh_brang);
 
 static char current_user[MAX_STRLEN];
 static data_t data;
@@ -149,7 +147,8 @@ void display_stok_view_name(){
     product_t produk;
     uint16_t jumlah_produk = 0;
     while(fread(&produk, sizeof(product_t), 1, database_file) == 1) {
-        jumlah_produk++;
+        if (strlen(produk.nama) != 0)
+            jumlah_produk++;
     }
 
     if (jumlah_produk == 0) {
@@ -160,12 +159,8 @@ void display_stok_view_name(){
 
     // Untuk diproses ke sortir nanti
     product_t* produk_stok = malloc(jumlah_produk * sizeof(product_t));
-    if (!produk_stok) {
-        draw_dialog_err("Gagal mengalokasikan memori!");
-        fclose(database_file);
-        return;
-    }
     rewind(database_file);
+
     for (uint16_t i = 0; i < jumlah_produk; i++) {
         if (fread(&produk_stok[i], sizeof(product_t), 1, database_file) != 1) {
             draw_dialog_err("Gagal membaca data produk!");
@@ -178,22 +173,24 @@ void display_stok_view_name(){
 
     sort_nama(produk_stok, jumlah_produk);
 
-    bool status = draw_init(TOP_CENTER, 1, 1, WIDTH, 20);
-    if (status == false) return;
+    uint8_t height = jumlah_produk + 6;
 
-    draw_box(TITLE_NOBOX, MAG, "Stok Sekarang");
+    term_clean();
+    draw_init(CENTER_CENTER, 1, 1, WIDTH, height);
+    draw_box(TITLE, MAG, "Lihat seluruh produk");
     draw_line(LEFT, MAG, 0, "No | Nama Produk            | Stok | Harga");
     draw_decor(MAG);
 
-    for (uint16_t i = 0; i < jumlah_produk; i++) {
-        draw_line(LEFT, MAG, 0, "%-2d | %-22s | %-4d | %-6d",
+    for (uint8_t i = 0; i < jumlah_produk; i++) {
+        draw_line(LEFT, MAG, 0, "%2i | %-22s | %-4i | %-8i",
                 i+1,
                 produk_stok[i].nama,
                 produk_stok[i].jumlah,
                 produk_stok[i].harga);
     }
 
-    draw_line(CENTER, MAG, 1, MAG_BG" Press enter to continue... ");
+    draw_decor(MAG);
+    draw_line(CENTER, MAG, 2, MAG_BG BLK" Press enter to continue... ");
     draw_end();
     getchar();
 
@@ -215,7 +212,8 @@ void display_stok_view_number(){
     product_t produk;
     uint16_t jumlah_produk = 0;
     while(fread(&produk, sizeof(product_t), 1, database_file) == 1) {
-        jumlah_produk++;
+        if (strlen(produk.nama) != 0)
+            jumlah_produk++;
     }
 
     if (jumlah_produk == 0) {
@@ -226,12 +224,8 @@ void display_stok_view_number(){
 
     // Untuk diproses ke sortir nanti
     product_t* produk_stok = malloc(jumlah_produk * sizeof(product_t));
-    if (!produk_stok) {
-        draw_dialog_err("Gagal mengalokasikan memori!");
-        fclose(database_file);
-        return;
-    }
     rewind(database_file);
+
     for (uint16_t i = 0; i < jumlah_produk; i++) {
         if (fread(&produk_stok[i], sizeof(product_t), 1, database_file) != 1) {
             draw_dialog_err("Gagal membaca data produk!");
@@ -242,24 +236,26 @@ void display_stok_view_number(){
     }
     fclose(database_file);
 
-    sort_jmlh(produk_stok, jumlah_produk);
+    sort_jumlah(produk_stok, jumlah_produk);
 
-    bool status = draw_init(TOP_CENTER, 1, 1, WIDTH, 20);
-    if (status == false) return;
+    uint8_t height = jumlah_produk + 6;
 
-    draw_box(TITLE_NOBOX, MAG, "Stok Sekarang");
+    term_clean();
+    draw_init(CENTER_CENTER, 1, 1, WIDTH, height);
+    draw_box(TITLE, MAG, "Lihat seluruh produk");
     draw_line(LEFT, MAG, 0, "No | Nama Produk            | Stok | Harga");
     draw_decor(MAG);
 
-    for (uint16_t i = 0; i < jumlah_produk; i++) {
-        draw_line(LEFT, MAG, 0, "%-2d | %-22s | %-4d | %-6d",
+    for (uint8_t i = 0; i < jumlah_produk; i++) {
+        draw_line(LEFT, MAG, 0, "%2i | %-22s | %-4i | %-8i",
                 i+1,
                 produk_stok[i].nama,
                 produk_stok[i].jumlah,
                 produk_stok[i].harga);
     }
 
-    draw_line(CENTER, MAG, 1, MAG_BG" Press enter to continue... ");
+    draw_decor(MAG);
+    draw_line(CENTER, MAG, 2, MAG_BG BLK" Press enter to continue... ");
     draw_end();
     getchar();
 
@@ -281,7 +277,8 @@ void display_stok_view_price(){
     product_t produk;
     uint16_t jumlah_produk = 0;
     while(fread(&produk, sizeof(product_t), 1, database_file) == 1) {
-        jumlah_produk++;
+        if (strlen(produk.nama) != 0)
+            jumlah_produk++;
     }
 
     if (jumlah_produk == 0) {
@@ -292,12 +289,8 @@ void display_stok_view_price(){
 
     // Untuk diproses ke sortir nanti
     product_t* produk_stok = malloc(jumlah_produk * sizeof(product_t));
-    if (!produk_stok) {
-        draw_dialog_err("Gagal mengalokasikan memori!");
-        fclose(database_file);
-        return;
-    }
     rewind(database_file);
+
     for (uint16_t i = 0; i < jumlah_produk; i++) {
         if (fread(&produk_stok[i], sizeof(product_t), 1, database_file) != 1) {
             draw_dialog_err("Gagal membaca data produk!");
@@ -310,22 +303,24 @@ void display_stok_view_price(){
 
     sort_harga(produk_stok, jumlah_produk);
 
-    bool status = draw_init(TOP_CENTER, 1, 1, WIDTH, 20);
-    if (status == false) return;
+    uint8_t height = jumlah_produk + 6;
 
-    draw_box(TITLE_NOBOX, MAG, "Stok Sekarang");
+    term_clean();
+    draw_init(CENTER_CENTER, 1, 1, WIDTH, height);
+    draw_box(TITLE, MAG, "Lihat seluruh produk");
     draw_line(LEFT, MAG, 0, "No | Nama Produk            | Stok | Harga");
     draw_decor(MAG);
 
-    for (uint16_t i = 0; i < jumlah_produk; i++) {
-        draw_line(LEFT, MAG, 0, "%-2d | %-22s | %-4d | %-6d",
+    for (uint8_t i = 0; i < jumlah_produk; i++) {
+        draw_line(LEFT, MAG, 0, "%2i | %-22s | %-4i | %-8i",
                 i+1,
                 produk_stok[i].nama,
                 produk_stok[i].jumlah,
                 produk_stok[i].harga);
     }
 
-    draw_line(CENTER, MAG, 1, MAG_BG" Press enter to continue... ");
+    draw_decor(MAG);
+    draw_line(CENTER, MAG, 2, MAG_BG BLK" Press enter to continue... ");
     draw_end();
     getchar();
 
@@ -334,11 +329,27 @@ void display_stok_view_price(){
     return;
 }
 
+// https://stackoverflow.com/a/25456826
+int cmpalph(const char *string_1, const char *string_2) {
+    const char *cp1 = string_1, *cp2 = string_2;
+    int sccmp = 1;
+
+    for (; toupper(*cp1) == toupper(*cp2); cp1++, cp2++)
+        if (*cp1 == '\0')
+            sccmp = 0;
+    if (sccmp) return ((toupper(*cp1) < toupper(*cp2)) ? -1 : +1);
+
+    for (; *string_1 == *string_2; string_1++, string_2++)
+        if (*string_1 == '\0')
+            return 0;
+    return ((*string_1 < *string_2) ? +1 : -1);
+}
+
 static void sort_nama(product_t *items, int jmlh_brang) {
-    term_clean();
+    term_clean()
     for (int i = 0; i < jmlh_brang - 1; i++) {
         for (int j = i + 1; j < jmlh_brang; j++) {
-            if (strcmp(items[i].nama, items[j].nama) > 0) {
+            if (cmpalph(items[i].nama, items[j].nama) > 0) {
                 product_t temp = items[i];
                 items[i] = items[j];
                 items[j] = temp;
@@ -360,11 +371,11 @@ static void sort_harga(product_t *items, int jmlh_brang) {
     }
 }
 
-static void sort_jmlh(product_t *items, int jmlh_brang) {
+static void sort_jumlah(product_t *items, int jmlh_brang) {
     term_clean();
     for (int i = 0; i < jmlh_brang - 1; i++) {
         for (int j = i + 1; j < jmlh_brang; j++) {
-            if (items[i].jumlah > items[j].jumlah) {
+            if (items[i].jumlah < items[j].jumlah) {
                 product_t temp = items[i];
                 items[i] = items[j];
                 items[j] = temp;
@@ -409,7 +420,7 @@ void display_stok_cari(){
             draw_line(LEFT, MAG, 1, MAG"Harga produk\t: %i", produk.harga);
             draw_line(LEFT, MAG, 1, MAG"Jumlah stok\t: %i", produk.jumlah);
             draw_decor(MAG);
-            draw_line(CENTER, MAG, 1, MAG_BG" Press enter to continue... ");
+            draw_line(CENTER, MAG, 2, MAG_BG BLK" Press enter to continue... ");
             getchar();
         }
     }
@@ -422,6 +433,7 @@ void display_stok_cari(){
 }
 
 void display_stok_beli() {
+    display_stok_view_name();
     term_clean();
 
     char nama[MAX_STRLEN] = {0};
@@ -461,13 +473,12 @@ void display_stok_beli() {
             draw_line(LEFT, MAG, 1, MAG"Harga produk\t: %d", produk.harga);
             draw_line(LEFT, MAG, 1, MAG"Jumlah stok\t: %d", produk.jumlah);
             draw_decor(MAG);
-            draw_line(LEFT, MAG, 1, MAG"Apakah anda yakin ingin membelinya?");
+            draw_line(LEFT, MAG, 0, "Apakah anda yakin ingin membelinya?");
             draw_input(MAG, 1, "(Y/n)    ");
             draw_end();
 
             input_string(certainty);
 
-            // Handle user confirmation
             if (strcasecmp(certainty, "n") == 0) {
                 draw_dialog_info("Pembelian dibatalkan!");
                 break;
@@ -494,7 +505,7 @@ void display_stok_beli() {
             }
 
             draw_change_current_line(1);
-            draw_input(MAG, 1, MAG"Alamat anda:");
+            draw_input(MAG, 1, MAG"Alamat anda  :");
             input_string(data.order.alamat[order_index]);
             draw_input(MAG, 1, MAG"Nomor telepon:");
             input_string(data.order.telepon[order_index]);
@@ -515,6 +526,24 @@ void display_stok_beli() {
             if (order_success) {
                 database_update(&data);
                 draw_dialog_info("Produk berhasil diorder!");
+
+                term_clean();
+                draw_init(CENTER_CENTER, 1, 1, WIDTH, 10);
+                draw_box(TITLE, GRN, "Pembayaran");
+                draw_line(LEFT, GRN, 1, GRN"Transfer ke rekening ini ya!");
+                draw_line(LEFT, GRN, 1, BLU"Konfirmasi Pembayaran melalui chat!");
+                draw_decor(GRN);
+                draw_line(LEFT, GRN, 2, GRN"Nomor Rekening: "WHT"%s", NOMOR_REKENING);
+                draw_line(LEFT, GRN, 2, GRN"Nama Bank     : "WHT"%s", NAMA_BANK);
+                draw_line(LEFT, GRN, 2, GRN"Atas Nama     : "WHT"%s", ATAS_NAMA);
+                draw_decor(GRN);
+
+                SET_CURSOR(CURSOR_HIDE);
+                draw_line(CENTER, GRN, 2, GRN_BG BLK" Press enter to continue... ");
+                draw_end();
+
+                while (getchar() != '\n');
+                SET_CURSOR(CURSOR_SHOW);
             }
             break;
         }
@@ -526,74 +555,3 @@ void display_stok_beli() {
 
     fclose(database_file);
 }
-
-// static void beli_barang(product_t *items, int *jmlh_brang) {
-//     data_t user;
-//     user.order.orderCount = 0;
-//     strcpy(order.status, "Menunggu");
-
-//     char lanjut;
-//     do {
-//         int index = 0;
-//         char nama_barang[MAX_NAME_LENGTH];
-//         getchar();
-//         while (index == 0) {
-//         printf("\nMasukkan nama barang yang ingin dibeli: ");
-//         input_string(nama_barang);
-
-//         for (int i = 0; i < *jmlh_brang; i++) {
-//             if (strcmp(items[i].nama, nama_barang) == 0) {
-//                 index = i;
-//                 break;
-//                 }
-//             }
-
-//         if (index == 0) {
-//             printf("\nBarang tidak ditemukan!\n");
-//             continue;
-//             }
-//         }
-
-//         int jumlah;
-//         int i = 0;
-//         while (i == 0){
-//         printf("\nMasukkan jumlah yang ingin dibeli: ");
-//         scanf("%d", &jumlah);
-
-//         i = 1;
-//         if (jumlah > items[index].jmlh) {
-//             printf("Stok tidak mencukupi!\n");
-//             i = 0;
-//             break;
-//         }
-//         }
-//         getchar();
-
-//         strcpy(order.items[order.item_count].nama_barang, items[index].nama);
-//         order.items[order.item_count].jumlah_dibeli = jumlah;
-//         order.items[order.item_count].harga_satuan = items[index].harga;
-//         order.item_count++;
-
-//         items[index].jmlh -= jumlah;
-
-//         do{
-//         printf("\nTambahkan barang lain? (y/n): ");
-//         scanf(" %c", &lanjut);
-//         }while (lanjut != 'y' && lanjut !='n' && lanjut == 'Y' && lanjut == 'N');
-//     } while ((lanjut == 'y' || lanjut == 'Y') && order.item_count < MAX_ITEMS);
-
-//     printf("\n=== DETAIL PENGIRIMAN ===\n");
-//     printf("Alamat: ");
-//     input_string(order.alamat);
-//     printf("Nomor Telepon: ");
-//     scanf(" %d", order.telepon);
-
-//     printf("=== DETAIL PEMBAYARAN ===\n");
-//     printf("Nomor Rekening\t: 707563602600\nNama Bank\t: CIMB NIAGA\nAtas Nama\t: DAFFA RIZQY ANDIKA\n");
-
-//     simpan_pesanan(&order);
-
-//     printf("\n\e[1mTERIMAKASIH TELAH MEMBELI DARI D MILSURP\e[0m\nTekan enter untuk melanjutkan...");
-//     getchar();
-//     getchar();
-// }

@@ -10,13 +10,12 @@
 #include "tubes_main.h"
 #include "tubes_handler.h"
 #include "tubes_input.h"
-#include "tubes_manajemen.h"
+#include "tubes_user.h"
 #include "tubes_message.h"
 #include "tubes_stok.h"
 #include "tubes_admin.h"
 
-void display_end(int sig)
-{
+void display_end(int sig){
     term_clean();
     exit(sig);
 }
@@ -33,13 +32,13 @@ int main(int argc, char *argv[]){
             debug_message();
 
             log_print_info("Exiting message debug mode...");
-        } else if (strcmp(argv[1], "manajemen") == 0) {
+        } else if (strcmp(argv[1], "user") == 0) {
             term_clean();
-            print_info("Entering manajemen debug mode...");
+            print_info("Entering user debug mode...");
             sleep(1); fflush(stdout);
             debug_manajemen();
 
-            log_print_info("Exiting manajemen debug mode...");
+            log_print_info("Exiting user debug mode...");
         } else if (strcmp(argv[1], "admin") == 0) {
             term_clean();
             print_info("Entering admin debug mode...");
@@ -141,16 +140,14 @@ void display_utama(){
     while (true) {
         term_clean();
 
-        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
-        if (status == false) return;
-
+        draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
         draw_box(TITLE, BLU, "D'Milsurp");
         draw_line(LEFT, BLU, 3, BLU"Selamat datang di "CYN"D'Milsurp"BLU", dimana anda dapat");
         draw_line(LEFT, BLU, 1, BLU"membeli barang permainan yang menyenangkan!");
         draw_line(LEFT, BLU, 1, MAG"Silahkan pilih menu dibawah!");
         draw_decor(BLU);
         draw_line(LEFT, BLU, 0, "1. Pergi ke menu USER");
-        draw_line(LEFT, BLU, 0, "2. Pergi ke menu ADMIN");
+        draw_line(LEFT, BLU, 0, "2. Pergi ke menu BROKER");
         draw_line(LEFT, BLU, 1, RED"0. Keluar");
         draw_decor(BLU);
         draw_input(BLU, 0, "Input:");
@@ -172,5 +169,6 @@ void display_utama(){
                 break;
         }
     }
+
     display_end(SIGTERM);
 }

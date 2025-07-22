@@ -69,6 +69,7 @@ typedef enum {
 typedef enum {
     TITLE,
     TITLE_NOBOX,
+    TITLE_LATER,
     PLAIN,
 } box_t;
 
@@ -83,6 +84,8 @@ void draw_dialog_continue(const char* format, ...);
 void draw_dialog_err(const char* format, ...);
 void draw_dialog_info(const char* format, ...);
 void draw_dialog_warn(const char* format, ...);
+
+void draw_restore_input();
 
 /*
  * Initialize terminal drawing stuff.

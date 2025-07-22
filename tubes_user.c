@@ -4,7 +4,7 @@
 
 #include "tubes_database.h"
 #include "tubes_message.h"
-#include "tubes_manajemen.h"
+#include "tubes_user.h"
 #include "tubes_interface.h"
 #include "tubes_handler.h"
 #include "tubes_input.h"
@@ -13,95 +13,97 @@
 static char current_user[MAX_STRLEN];
 static data_t data;
 
+void display_user_feedback();
+
 void display_user_init(data_t *user){
     strncpy(current_user, user->username, MAX_STRLEN);
     data = *user;
 }
 
-void display_user_status(){
+void display_user_status() {
     term_clean();
 
+    char order_name[MAX_STRLEN] = {0};
     char new_status[MAX_STRLEN] = {0};
-    char order[MAX_STRLEN] = {0};
-    bool found_order = false;
-
-    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
-    if (!status) return;
+    bool order_found = false;
+    bool update_success = false;
 
     FILE* database_file = fopen(DATABASE_FILE, "rb+");
     if (!database_file) {
-        draw_dialog_err("Database tidak ditemukan!");
+        draw_dialog_err("Database tidak dapat diakses!");
         return;
     }
 
     data_t user;
-    bool update_success = false;
-
     while(fread(&user, sizeof(data_t), 1, database_file) == 1) {
         if (strcmp(user.username, current_user) == 0) {
             if (user.order.orderCount == 0) {
-                draw_dialog_err("User tidak memiliki orderan!");
-                break;
-            }
-
-            term_clean();
-            status = draw_init(TOP_CENTER, 1, 1, WIDTH, 3);
-            if (!status) {
+                draw_dialog_err("Anda belum memiliki orderan!");
                 fclose(database_file);
                 return;
             }
 
-            draw_box(TITLE_NOBOX, MAG, "Proses Orderan User");
-            draw_input(MAG, 0, "Pilih orderan:");
+            term_clean();
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, user.order.orderCount + 5);
+            draw_box(TITLE, MAG, "Daftar Order Anda");
+            draw_line(LEFT, MAG, 0, "Pilih order yang ingin diupdate:");
+            for (int i = 0; i < user.order.orderCount; i++) {
+                draw_line(LEFT, MAG, 0, "%d. %s - %s",
+                        i+1,
+                        user.order.orders[i],
+                        user.order.orderStatus[i]);
+            }
+            draw_decor(MAG);
+            draw_input(MAG, 0, "Masukkan nomor order:");
             draw_end();
 
-            input_string(order);
+            draw_restore_input();
 
-            for (int j = 0; j < user.order.orderCount; j++) {
-                if (strcmp(order, user.order.orders[j]) == 0) {
-                    found_order = true;
+            input_string(order_name);
+            int order_num = atoi(order_name) - 1;
 
-                    term_clean();
-                    status = draw_init(TOP_CENTER, 1, 1, WIDTH, 7);
-                    if (!status) {
-                        fclose(database_file);
-                        return;
-                    }
-
-                    draw_box(TITLE_NOBOX, MAG, "Proses Orderan User");
-                    draw_line(LEFT, MAG, 0, "Nama Orderan\t: %s", user.order.orders[j]);
-                    draw_line(LEFT, MAG, 0, "Alamat\t: %s", user.order.alamat[j]);
-                    draw_line(LEFT, MAG, 0, "Nomor Telepon\t: %s", user.order.telepon[j]);
-                    draw_line(LEFT, MAG, 0, "Status Orderan\t: %s", user.order.orderStatus[j]);
-                    draw_input(MAG, 0, "Ganti status: ");
-                    draw_end();
-
-                    input_string(new_status);
-
-                    strncpy(user.order.orderStatus[j], new_status, MAX_STRLEN);
-
-                    fseek(database_file, -sizeof(data_t), SEEK_CUR);
-                    fwrite(&user, sizeof(data_t), 1, database_file);
-
-                    draw_dialog_info("Status order berhasil diupdate!");
-                    break;
-                }
+            if (order_num < 0 || order_num >= user.order.orderCount) {
+                draw_dialog_err("Nomor order tidak valid!");
+                fclose(database_file);
+                return;
             }
 
-            if (!found_order) {
-                draw_dialog_err("Kamu tidak memiliki orderan tersebut!");
+            term_clean();
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, 8);
+            draw_box(TITLE, MAG, "Update Status Order");
+            draw_line(LEFT, MAG, 2, BLU"Order          : "WHT"%s", user.order.orders[order_num]);
+            draw_line(LEFT, MAG, 2, CYN"Alamat         : "WHT"%s", user.order.alamat[order_num]);
+            draw_line(LEFT, MAG, 2, YEL"Telepon        : "WHT"%s", user.order.telepon[order_num]);
+            draw_line(LEFT, MAG, 2, GRN"Status saat ini: "WHT"%s", user.order.orderStatus[order_num]);
+            draw_decor(MAG);
+            draw_input(MAG, 0, "Status baru:");
+            draw_end();
+
+            input_string(new_status);
+
+            strncpy(user.order.orderStatus[order_num], new_status, MAX_STRLEN);
+
+            fseek(database_file, -sizeof(data_t), SEEK_CUR);
+            if (fwrite(&user, sizeof(data_t), 1, database_file) == 1) {
+                update_success = true;
+                draw_dialog_info("Status order berhasil diperbarui!");
+            } else {
+                draw_dialog_err("Gagal menyimpan perubahan!");
             }
+
             break;
         }
     }
+
     fclose(database_file);
+
+    if (!update_success && !order_found) {
+        draw_dialog_err("Tidak dapat menemukan data user!");
+    }
 }
 
 void display_user_profile(){
     term_clean();
-
-    bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
-    if (status == false) return;
 
     FILE* database_file = fopen(DATABASE_FILE, "rb");
     data_t* user = malloc(sizeof(data_t));
@@ -118,10 +120,8 @@ void display_user_profile(){
 
             char username[MAX_STRLEN];
 
-            bool status = draw_init(TOP_CENTER, 1, 1, WIDTH, 3);
-            if (status == false) return;
-
-            draw_box(TITLE_NOBOX, MAG, "Profil User");
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, user->order.orderCount + 8);
+            draw_box(TITLE, MAG, "Profil User");
             draw_line(LEFT, MAG, 0, "Nama User\t: %s", user->username);
             draw_line(LEFT, MAG, 0, "Status\t\t: %s", (user->banned) ? "Ban" : "Aman");
             draw_line(LEFT, MAG, 0, "Jumlah terorder: %i", user->order.orderCount);
@@ -131,8 +131,10 @@ void display_user_profile(){
                     i + 1, user->order.orders[i], user->order.orderStatus[i]
                 );
             }
-            draw_line(CENTER, MAG, 1, MAG_BG" Press enter to continue... ");
+            draw_decor(MAG);
+            draw_line(CENTER, MAG, 2, MAG_BG BLK" Press enter to continue... ");
             draw_end();
+
             getchar();
         }
     }
@@ -148,7 +150,8 @@ void display_user_menu() {
         M_PROFIL    = 1,
         M_STATUS    = 2,
         M_TAMBAH    = 3,
-        M_PESAN     = 4,
+        M_FEEDBACK  = 4,
+        M_PESAN     = 5,
         M_LOGOUT    = 0,
     } menu_t;
     int choice;
@@ -156,7 +159,7 @@ void display_user_menu() {
     while(1) {
         term_clean();
 
-        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 12);
+        bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 13);
         if (status == false) return;
 
         draw_box(TITLE, BLU, "User Menu");
@@ -166,7 +169,8 @@ void display_user_menu() {
         draw_line(LEFT, BLU, 0, "1. Lihat Profil");
         draw_line(LEFT, BLU, 0, "2. Update Status Pesanan");
         draw_line(LEFT, BLU, 0, "3. Tambah Pesanan");
-        draw_line(LEFT, BLU, 0, "4. Kirim Pesan kepada Broker");
+        draw_line(LEFT, BLU, 0, "4. Kirim Feedback Aplikasi");
+        draw_line(LEFT, BLU, 0, "5. Kirim Pesan kepada Broker");
         draw_line(LEFT, BLU, 1, RED"0. Logout");
         draw_decor(BLU);
         draw_input(BLU, 0, "Input:");
@@ -186,6 +190,9 @@ void display_user_menu() {
                 break;
             case M_PESAN:
                 display_pesan_start(current_user, USER);
+                break;
+            case M_FEEDBACK:
+                display_user_feedback();
                 break;
             case M_LOGOUT:
                 memset(current_user, 0, MAX_STRLEN);
@@ -217,12 +224,12 @@ void display_user_register(){
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
-    choice_t type = database_user_signup(username, password, user);
+    choice_t type = database_user_signup(username, password, user, USER);
 
     switch(type){
         case C_SUCCESS:
             draw_dialog_continue("Registrasi berhasil!");
-            database_user_init(username, password, user);
+            database_user_init(username, password, user, USER);
             break;
         case C_FAILED:
             draw_dialog_err("Gagal untuk membuat akun!");
@@ -253,7 +260,7 @@ void display_user_login(){
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
-    database_user_t type = database_user_login(username, password, user);
+    database_user_t type = database_user_login(username, password, user, USER);
 
     switch(type){
             case D_BROKER:
@@ -266,6 +273,7 @@ void display_user_login(){
                     draw_dialog_continue("Login berhasil!");
                     display_user_init(user);
                     display_user_menu();
+                    draw_dialog_info("Selamat berbelanja lagi!");
                 }
                 break;
             case D_NONE:
@@ -315,4 +323,48 @@ void display_user_start() {
                 break;
         }
     }
+}
+
+void display_user_feedback(){
+    char teks[MAX_STRLEN];
+    int rating;
+
+    term_clean();
+    draw_init(CENTER_CENTER, 1, 1, WIDTH, 5);
+    draw_box(TITLE, BLU, "Beri Feedback");
+    draw_line(LEFT, BLU, 1, BLU"Berikan masukan untuk aplikasi kami!");
+    draw_line(LEFT, BLU, 0, "Rating (1-10) : ");
+    draw_line(LEFT, BLU, 0, "Deskripsi     : ");
+
+    draw_change_current_line(2);
+    draw_input(BLU, 0, "Rating (0-10) : ");
+    input_number(&rating);
+    draw_input(BLU, 0, "Deskripsi     : ");
+    input_string(teks);
+    draw_end();
+
+    FILE *feedback_file = fopen(FEEDBACK_FILE, "ab");
+    if (!feedback_file) feedback_file = fopen(FEEDBACK_FILE, "wb");
+
+    feedback_t feedback = {0};
+    if (strlen(teks) != 0) {
+
+        time_t now = time(NULL);
+        struct tm *local = localtime(&now);
+
+        strftime(feedback.date, MAX_STRLEN, "%d/%m/%Y", local);
+
+        strncpy(feedback.username,  current_user, MAX_STRLEN - 1);
+        strncpy(feedback.text,      teks, MAX_STRLEN - 1);
+        strftime(feedback.date,     MAX_STRLEN, "%d/%m/%Y", local);
+        feedback.rating = rating;
+
+        fwrite(&feedback, sizeof(feedback_t), 1, feedback_file);
+        fflush(feedback_file);
+    }
+    fclose(feedback_file);
+
+    draw_dialog_info("Terim akasih telah memberikan feedback!");
+
+    return;
 }

@@ -66,7 +66,7 @@ static void database_create(FILE *database_file){
 }
 
 void database_user_init(const char *username, const char *password,
-                               data_t *const user){
+                        data_t *const user , const user_t type){
     /*
         Initialize new user
 
@@ -82,7 +82,7 @@ void database_user_init(const char *username, const char *password,
     strncpy(user->password, password, sizeof(user->password));
 
     user->banned = false;
-    user->type  = USER;
+    user->type  = type;
 
     // Save the user data
     FILE* database_file = fopen(DATABASE_FILE, "ab");
@@ -90,7 +90,7 @@ void database_user_init(const char *username, const char *password,
     fclose(database_file);
 }
 
-database_user_t database_user_login(const char *username, const char *password, data_t *database_user){
+database_user_t database_user_login(const char *username, const char *password, data_t *database_user, user_t type){
     /*
         Check whether the user is an admin, user, or none of them
 
@@ -118,10 +118,11 @@ database_user_t database_user_login(const char *username, const char *password, 
             found = true;
 
             if (strcmp(database_user->password, password) == 0){
-                if (strcmp(username, "Admin") == 0)
-                    user_type = D_BROKER;
-                else
-                    user_type = D_USER;
+                if (database_user->type == type)
+                    user_type = (database_user_t)type;
+                else {
+                    user_type = (database_user_t)database_user->type;
+                }
                 break;
             } else {
                 draw_dialog_err("Wrong Password bleh :p");
@@ -141,7 +142,7 @@ database_user_t database_user_login(const char *username, const char *password, 
 }
 
 choice_t database_user_signup( const char *username, const char *password,
-                                   data_t *database_user){
+                                   data_t *database_user, user_t type){
     /*
         Check whether the user input valid inputs or whether
         the inputted username already exist in the database
