@@ -5,12 +5,16 @@
 */
 #include <stdarg.h> // ::{va_list, va_start, vprintf, va_end}
 #include <stdbool.h>
-#include <stdlib.h> // ::{malloc, free}
 #include <stdint.h> // ::{uint8_t}
 #include <stdio.h>  // ::{printf, fflush}
 #include <string.h> // ::{strlen, strcpy, strcat}
 #include <unistd.h> // ::{usleep}
-#include <sys/ioctl.h>
+
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <sys/ioctl.h>
+#endif
 
 #include "tubes_interface.h"
 #include "tubes_handler.h"
@@ -51,11 +55,25 @@ static uint8_t  input_y;
 static bool    initialized;
 
 void get_window_size(uint8_t *width, uint8_t *height){
+#ifdef _WIN32
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    int col, row;
+
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+        col = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        row = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+	*height = row / 2;
+	*width = col / 2;
+    } else {
+        printf("Failed to get console screen buffer info.\n");
+    }
+#else
     struct winsize ws;
 	ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
 
 	*width  = ws.ws_col / 2;
 	*height = ws.ws_row / 2;
+#endif
 }
 
 static void draw_check(){
