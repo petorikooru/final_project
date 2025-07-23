@@ -407,7 +407,7 @@ void draw_change_current_line(uint8_t newline){
     }
 
     if (current_line - newline + current_y <= 0){
-        log_print_err("Line cannot be less than 1!");
+        draw_dialog_err("Line cannot be less than 1!");
         return;
     }
     current_line = newline + current_y;

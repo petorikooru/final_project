@@ -25,7 +25,7 @@ bool pesan_init(){
         pesan_ptr   = fopen(PESAN_FILE, "wb+");
     }
     if (pesan_ptr == NULL) {
-        log_print_err("Cannot create or open the file!");
+        draw_dialog_err("Cannot create or open the file!");
         return false;
     }
     end = false;
@@ -35,7 +35,7 @@ bool pesan_init(){
 
 void pesan_print(){
     if (pesan_ptr == NULL) {
-        log_print_err("Do the \"pesan_init()\" first!");
+        draw_dialog_err("Do the \"pesan_init()\" first!");
         return;
     }
 
@@ -65,7 +65,7 @@ void pesan_print(){
 
 void pesan_kirim(const char *teks){
     if (pesan_ptr == NULL) {
-        log_print_err("Do the \"pesan_init()\" first!");
+        draw_dialog_err("Do the \"pesan_init()\" first!");
         return;
     }
 
@@ -89,7 +89,7 @@ void pesan_kirim(const char *teks){
 
 bool pesan_clear(){
     if (pesan_ptr != NULL) {
-        log_print_err("Please end the pesan chain first!");
+        draw_dialog_err("Please end the pesan chain first!");
         return false;
     }
 
@@ -113,7 +113,7 @@ bool pesan_clear(){
 
 bool pesan_purge(char *username){
     if (pesan_ptr != NULL) {
-        log_print_err("Please end the pesan chain first!");
+        draw_dialog_err("Please end the pesan chain first!");
         return false;
     }
 
