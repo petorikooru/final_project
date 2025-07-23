@@ -164,8 +164,7 @@ void draw_end(){
 
 void draw_box(const box_t type, const char* color, const char* format, ...){
     if (initialized == false){
-        SET_OFFSET_ERR(1, 19);
-        log_print_err("Draw: Please initialize \"draw_init()\" first");
+        draw_dialog_err("Draw: Please initialize \"draw_init()\" first");
         return;
     }
 
@@ -305,7 +304,7 @@ void draw_box(const box_t type, const char* color, const char* format, ...){
 
 void draw_line(const align_t align, const char* color, const uint8_t count, const char* format, ...){
     if (initialized == false){
-        log_print_err("Draw: Please initialize \"draw_init()\" first");
+        draw_dialog_err("Draw: Please initialize \"draw_init()\" first");
         return;
     }
 
@@ -349,7 +348,7 @@ void draw_line(const align_t align, const char* color, const uint8_t count, cons
 
 void draw_input(const char* color, const uint8_t count, const char* format, ...){
     if (initialized == false){
-        log_print_err("Draw: Please initialize \"draw_init()\" first");
+        draw_dialog_err("Draw: Please initialize \"draw_init()\" first");
         return;
     }
 
@@ -383,7 +382,7 @@ void draw_input(const char* color, const uint8_t count, const char* format, ...)
 
 void draw_decor(const char* color){
     if (initialized == false){
-        log_print_err("Draw: Please initialize \"draw_init()\" first");
+        draw_dialog_err("Draw: Please initialize \"draw_init()\" first");
         return;
     }
 
@@ -403,7 +402,7 @@ void draw_decor(const char* color){
 
 void draw_change_current_line(uint8_t newline){
     if (initialized == false){
-        log_print_err("Draw: Please initialize \"draw_init()\" first");
+        draw_dialog_err("Draw: Please initialize \"draw_init()\" first");
         return;
     }
 

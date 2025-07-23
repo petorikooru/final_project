@@ -14,7 +14,6 @@
 #define NAMA_BANK "CIMB NIAGA"
 #define ATAS_NAMA "DAFFA RIZQY ANDIKA"
 
-
 void display_stok_cari();
 
 void display_stok_beli();
@@ -79,8 +78,7 @@ void display_stok_start(data_t *user){
             case M_KELUAR:
                 return;
             default:
-                log_print_err("Invalid input! Press enter to continue...");
-                getchar();
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
@@ -127,8 +125,7 @@ void display_stok_view(){
             case M_KELUAR:
                 return;
             default:
-                log_print_err("Invalid input! Press enter to continue...");
-                getchar();
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
@@ -416,9 +413,9 @@ void display_stok_cari(){
 
             draw_init(CENTER_CENTER, 1, 1, WIDTH, 7);
             draw_box(TITLE, MAG, "Order Produk");
-            draw_line(LEFT, MAG, 1, MAG"Nama produk\t: "WHT"%s", produk.nama);
-            draw_line(LEFT, MAG, 1, MAG"Harga produk\t: "WHT"%i", produk.harga);
-            draw_line(LEFT, MAG, 1, MAG"Jumlah stok\t: "WHT"%i", produk.jumlah);
+            draw_line(LEFT, MAG, 1, MAG"Nama produk   : "WHT"%s", produk.nama);
+            draw_line(LEFT, MAG, 1, MAG"Harga produk  : "WHT"%i", produk.harga);
+            draw_line(LEFT, MAG, 1, MAG"Jumlah stok   : "WHT"%i", produk.jumlah);
             draw_decor(MAG);
             draw_line(CENTER, MAG, 2, MAG_BG BLK" Press enter to continue... ");
             getchar();
@@ -469,9 +466,9 @@ void display_stok_beli() {
 
             draw_init(CENTER_CENTER, 1, 1, WIDTH, 8);
             draw_box(TITLE, MAG, "Order Produk");
-            draw_line(LEFT, MAG, 1, MAG"Nama produk\t: "WHT"%s", produk.nama);
-            draw_line(LEFT, MAG, 1, MAG"Harga produk\t: "WHT"%d", produk.harga);
-            draw_line(LEFT, MAG, 1, MAG"Jumlah stok\t: "WHT"%d", produk.jumlah);
+            draw_line(LEFT, MAG, 1, MAG"Nama produk   : "WHT"%s", produk.nama);
+            draw_line(LEFT, MAG, 1, MAG"Harga produk  : "WHT"%d", produk.harga);
+            draw_line(LEFT, MAG, 1, MAG"Jumlah stok   : "WHT"%d", produk.jumlah);
             draw_decor(MAG);
             draw_line(LEFT, MAG, 0, "Apakah anda yakin ingin membelinya?");
             draw_input(MAG, 1, YEL"(Y/n) :");
@@ -533,9 +530,9 @@ void display_stok_beli() {
                 draw_line(LEFT, GRN, 1, GRN"Transfer ke rekening ini ya!");
                 draw_line(LEFT, GRN, 1, BLU"Konfirmasi Pembayaran melalui chat!");
                 draw_decor(GRN);
-                draw_line(LEFT, GRN, 2, GRN"Nomor Rekening: "WHT"%s", NOMOR_REKENING);
-                draw_line(LEFT, GRN, 2, GRN"Nama Bank     : "WHT"%s", NAMA_BANK);
-                draw_line(LEFT, GRN, 2, GRN"Atas Nama     : "WHT"%s", ATAS_NAMA);
+                draw_line(LEFT, GRN, 2, GRN"Nomor Rekening : "WHT"%s", NOMOR_REKENING);
+                draw_line(LEFT, GRN, 2, GRN"Nama Bank      : "WHT"%s", NAMA_BANK);
+                draw_line(LEFT, GRN, 2, GRN"Atas Nama      : "WHT"%s", ATAS_NAMA);
                 draw_decor(GRN);
 
                 SET_CURSOR(CURSOR_HIDE);
