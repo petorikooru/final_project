@@ -75,7 +75,7 @@ void display_admin_start() {
             case M_EXIT:
                 return;
             default:
-                draw_dialog_err("Input tidak valid!");
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
@@ -247,7 +247,7 @@ void display_admin_menu() {
                 draw_dialog_info("Selamat tinggal, Broker!");
                 return;
             default:
-                draw_dialog_err("Input tidak valid!");
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
@@ -306,7 +306,7 @@ void display_admin_user(){
             case M_EXIT:
                 return;
             default:
-                draw_dialog_err("Input tidak valid!");
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
@@ -657,7 +657,7 @@ void display_admin_order(){
             case M_EXIT:
                 return;
             default:
-                draw_dialog_err("Input tidak valid!");
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
@@ -947,7 +947,7 @@ void display_admin_stock(){
             case M_EXIT:
                 return;
             default:
-                draw_dialog_err("Input tidak valid!");
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }

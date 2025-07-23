@@ -217,7 +217,7 @@ void display_pesan_start(char *nama, user_t tipe){
                 case EXIT:
                     return;
                 default:
-                    draw_dialog_err("Input tidak valid!");
+                    draw_dialog_err("Input invalid!");
             }
         }
     } else {
@@ -253,7 +253,7 @@ void display_pesan_start(char *nama, user_t tipe){
                 case EXIT:
                     return;
                 default:
-                    draw_dialog_err("Input tidak valid!");
+                    draw_dialog_err("Input invalid!");
             }
         }
     }

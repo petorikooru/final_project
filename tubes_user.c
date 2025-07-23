@@ -193,7 +193,7 @@ void display_user_menu() {
                 memset(current_user, 0, MAX_STRLEN);
                 return;
             default:
-                draw_dialog_err("Input tidak valid!");
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
@@ -314,7 +314,7 @@ void display_user_start() {
             case M_EXIT:
                 return;
             default:
-                draw_dialog_err("Invalid input! Press enter to continue...");
+                draw_dialog_err("Input invalid!");
                 break;
         }
     }
