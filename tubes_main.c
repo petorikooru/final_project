@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <pthread.h>
 #include <unistd.h>
 #include <signal.h>
 
@@ -46,7 +45,9 @@ int main(int argc, char *argv[]){
             debug_admin();
 
             log_print_info("Exiting admin debug mode...");
-        } else {
+        }
+
+        else {
             printf(
                 "Usage: ./tubes.bin <debug_mode>\n"
                 "+ message\t: Run message debug mode \n"
@@ -141,16 +142,16 @@ void display_utama(){
         term_clean();
 
         draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
-        draw_box(TITLE, BLU, "D'Milsurp");
-        draw_line(LEFT, BLU, 3, BLU"Selamat datang di "CYN"D'Milsurp"BLU", dimana anda dapat");
-        draw_line(LEFT, BLU, 1, BLU"membeli barang permainan yang menyenangkan!");
-        draw_line(LEFT, BLU, 1, MAG"Silahkan pilih menu dibawah!");
-        draw_decor(BLU);
-        draw_line(LEFT, BLU, 0, "1. Pergi ke menu USER");
-        draw_line(LEFT, BLU, 0, "2. Pergi ke menu BROKER");
-        draw_line(LEFT, BLU, 1, RED"0. Keluar");
-        draw_decor(BLU);
-        draw_input(BLU, 0, "Input:");
+        draw_box(TITLE, CYN, "D'Milsurp");
+        draw_line(LEFT, CYN, 3, CYN"Selamat datang di "MAG"D'Milsurp"CYN", dimana anda dapat");
+        draw_line(LEFT, CYN, 1, CYN"membeli barang permainan yang menyenangkan!");
+        draw_line(LEFT, CYN, 1, MAG"Silahkan pilih menu dibawah!");
+        draw_decor(CYN);
+        draw_line(LEFT, CYN, 0, "1. Pergi ke menu USER");
+        draw_line(LEFT, CYN, 0, "2. Pergi ke menu BROKER");
+        draw_line(LEFT, CYN, 1, RED"0. Keluar");
+        draw_decor(CYN);
+        draw_input(CYN, 0, "Input:");
         draw_end();
 
         input_number(&choice);

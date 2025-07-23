@@ -62,8 +62,8 @@ void get_window_size(uint8_t *width, uint8_t *height){
     if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
         col = csbi.srWindow.Right - csbi.srWindow.Left + 1;
         row = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-	*height = row / 2;
-	*width = col / 2;
+        *height = row / 2;
+        *width = col / 2;
     } else {
         printf("Failed to get console screen buffer info.\n");
     }

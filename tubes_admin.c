@@ -9,6 +9,7 @@
 #include "tubes_input.h"
 #include "tubes_message.h"
 #include "tubes_stok.h"
+#include "tubes_admin.h"
 
 #define MAX_USERS 100
 #define MAX_NAME_LENGTH 50
@@ -80,6 +81,62 @@ void display_admin_start() {
     }
 }
 
+void display_admin_register(){
+    char username[MAX_STRLEN];
+    char password[MAX_STRLEN];
+    char token[MAX_STRLEN];
+    uint8_t chance = 3;
+
+    while (true) {
+        chance--;
+        term_clean();
+        draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
+        draw_box(TITLE, MAG, "Registrasi Broker");
+        draw_input(BLU, 1, MAG"Input token broker:");
+        input_string(token);
+
+        if (strcmp(token, TOKEN_STRING) != 0) {
+            draw_dialog_err("Token salah!");
+        } else break;
+
+        if (chance == 0) {
+            draw_dialog_err("Percobaan telah habis!");
+            return;
+        }
+
+        draw_dialog_warn("Anda memiliki %i percobaan lagi!", chance);
+    }
+    term_clean();
+
+    draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
+
+    draw_box(TITLE, MAG, "Registrasi Broker");
+    draw_line(LEFT, MAG, 1, MAG"Username:");
+    draw_line(LEFT, MAG, 1, MAG"Password:");
+
+    draw_change_current_line(1);
+    draw_input(MAG, 1, MAG"Username:");
+    input_string(username);
+    draw_input(MAG, 1, MAG"Password:");
+    input_string(password);
+
+    data_t* user = malloc(sizeof(data_t));
+    choice_t type = database_user_signup(username, password, user, BROKER);
+
+    switch(type){
+        case C_SUCCESS:
+            draw_dialog_continue("Registrasi berhasil!");
+            database_user_init(username, password, user, BROKER);
+            break;
+        case C_FAILED:
+            draw_dialog_err("Gagal untuk membuat akun!");
+            break;
+    }
+
+    free(user);
+    draw_end();
+}
+
 void display_admin_login(){
     typedef enum {
         C_SUCCESS,
@@ -88,13 +145,9 @@ void display_admin_login(){
     char username[MAX_STRLEN];
     char password[MAX_STRLEN];
     uint8_t chance = 3;
+    bool failed = false;
 
-    while (true) {
-        if (chance == 0) {
-            draw_dialog_err("Percobaan telah habis!");
-            return;
-        }
-
+    while (!failed) {
         term_clean();
 
         draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
@@ -121,13 +174,18 @@ void display_admin_login(){
                 return;
             case D_USER:
                 draw_dialog_err("Anda bukanlah Broker!");
+                failed = true;
                 return;
             case D_NONE:
                 chance--;
                 draw_dialog_err("Login gagal!");
-                draw_dialog_warn("Anda memiliki %i percobaan lagi!", chance);
                 break;
         }
+        if (chance == 0) {
+            draw_dialog_err("Percobaan telah habis!");
+            return;
+        }
+        draw_dialog_warn("Anda memiliki %i percobaan lagi!", chance);
     }
 }
 
@@ -195,61 +253,6 @@ void display_admin_menu() {
     }
 }
 
-void display_admin_register(){
-    char username[MAX_STRLEN];
-    char password[MAX_STRLEN];
-    char token[MAX_STRLEN];
-    uint8_t chance = 3;
-
-    while (true) {
-        if (chance == 0) {
-            draw_dialog_err("Percobaan telah habis!");
-            return;
-        }
-
-        chance--;
-        term_clean();
-        draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
-        draw_box(TITLE, BLU, "Register Broker");
-        draw_input(BLU, 1, BLU"Input token broker:");
-        input_string(token);
-
-        if (strcmp(token, "Agnes Tachyon") != 0) {
-            draw_dialog_err("Token salah!");
-            draw_dialog_warn("Anda memiliki %i percobaan lagi!", chance);
-        } else break;
-    }
-    term_clean();
-
-    draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
-
-    draw_box(TITLE, BLU, "Registrasi Broker");
-    draw_line(LEFT, BLU, 1, BLU"Username:");
-    draw_line(LEFT, BLU, 1, BLU"Password:");
-
-    draw_change_current_line(1);
-    draw_input(BLU, 1, BLU"Username:");
-    input_string(username);
-    draw_input(BLU, 1, BLU"Password:");
-    input_string(password);
-
-    data_t* user = malloc(sizeof(data_t));
-    choice_t type = database_user_signup(username, password, user, BROKER);
-
-    switch(type){
-        case C_SUCCESS:
-            draw_dialog_continue("Registrasi berhasil!");
-            database_user_init(username, password, user, BROKER);
-            break;
-        case C_FAILED:
-            draw_dialog_err("Gagal untuk membuat akun!");
-            break;
-    }
-
-    free(user);
-    draw_end();
-}
-
 void display_admin_user(){
     typedef enum {
         M_VIEWALL   = 1,
@@ -267,7 +270,7 @@ void display_admin_user(){
         bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 13);
         if (status == false) return;
 
-        draw_box(TITLE, MAG, "Broker Menu");
+        draw_box(TITLE, MAG, "Pengaturan User");
         draw_line(LEFT, MAG, 3, MAG"Selamat datang Broker, apa yang akan kamu lakukan?");
         draw_line(LEFT, MAG, 1, MAG"Silahkan pilih menu dibawah!");
         draw_decor(MAG);
@@ -392,14 +395,15 @@ void display_admin_user_view(){
 
             char username[MAX_STRLEN];
 
-            draw_init(CENTER_CENTER, 1, 1, WIDTH, user->order.orderCount + 8);
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, user->order.orderCount + 9);
             draw_box(TITLE, MAG, "Profil User");
-            draw_line(LEFT, MAG, 0, "Nama User\t: %s", user->username);
-            draw_line(LEFT, MAG, 0, "Status\t\t: %s", (user->banned) ? "Ban" : "Aman");
+            draw_line(LEFT, MAG, 0, "Nama User      : %s", user->username);
+            draw_line(LEFT, MAG, 0, "Status         : %s", (user->banned) ? "Ban" : "Aman");
             draw_line(LEFT, MAG, 0, "Jumlah terorder: %i", user->order.orderCount);
-            draw_line(LEFT, MAG, 0, "Orderan\t:");
+            draw_decor(MAG);
+            draw_line(CENTER, MAG, 1, MAG_BG"Orderan:");
             for (int i = 0; i < user->order.orderCount; i++){
-                draw_line(LEFT, MAG, 0, "%2i. %s : %s",
+                draw_line(LEFT, MAG, 0, "%2i. %-10s : %s",
                     i + 1, user->order.orders[i], user->order.orderStatus[i]
                 );
             }
@@ -629,7 +633,7 @@ void display_admin_order(){
         bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
         if (status == false) return;
 
-        draw_box(TITLE, MAG, "Broker Menu");
+        draw_box(TITLE, MAG, "Pengaturan Stok");
         draw_line(LEFT, MAG, 3, MAG"Proses orderan dan Tambah Stok!");
         draw_line(LEFT, MAG, 1, MAG"Silahkan pilih menu dibawah!");
         draw_decor(MAG);
@@ -755,13 +759,14 @@ void display_admin_order_process(){
             }
 
             int i;
-            uint8_t height = user.order.orderCount + 6;
+            uint8_t height = user.order.orderCount + 7;
 
             term_clean();
             draw_init(CENTER_CENTER, 1, 1, WIDTH, height);
             draw_box(TITLE, MAG, "Proses Orderan User");
-            draw_line(LEFT, MAG, 0, "Nama User\t: %s", user.username);
-            draw_line(LEFT, MAG, 0, "Pilih orderan:");
+            draw_line(CENTER, MAG, 2, BLU"Nama User : "WHT"%s", user.username);
+            draw_decor(MAG);
+            draw_line(LEFT, MAG, 1, MAG"Pilih orderan:");
             for (int j = 0; j < user.order.orderCount; j++) {
                 if (strlen(user.order.orders[j]) > 0) {
                     draw_line(LEFT, MAG, 0, "%2i. %-14s : %-s",
@@ -785,13 +790,14 @@ void display_admin_order_process(){
                 found_order = true;
 
             term_clean();
-            draw_init(CENTER_CENTER, 1, 1, WIDTH, 9);
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, 10);
             draw_box(TITLE, MAG, "Proses Orderan User");
-            draw_line(LEFT, MAG, 0, "Nama User\t: %s", user.username);
-            draw_line(LEFT, MAG, 0, "Nama Orderan\t: %s", user.order.orders[order]);
-            draw_line(LEFT, MAG, 0, "Alamat\t\t: %s", user.order.alamat[order]);
-            draw_line(LEFT, MAG, 0, "Nomor Telepon\t: %s", user.order.telepon[order]);
-            draw_line(LEFT, MAG, 0, "Status Orderan\t: %s", user.order.orderStatus[order]);
+            draw_line(CENTER, MAG, 2, BLU"Nama User : "WHT"%s", user.username);
+            draw_line(CENTER, MAG, 2, BLU"Nama Orderan : "WHT"%s", user.order.orders[order]);
+            draw_decor(MAG);
+            draw_line(LEFT, MAG, 0, "Alamat           : %s", user.order.alamat[order]);
+            draw_line(LEFT, MAG, 0, "Nomor Telepon    : %s", user.order.telepon[order]);
+            draw_line(LEFT, MAG, 1, YEL"Status Orderan   "WHT": %s", user.order.orderStatus[order]);
             draw_decor(MAG);
             draw_input(MAG, 0, "Ganti status: ");
             draw_end();
@@ -927,13 +933,13 @@ void display_admin_stock(){
         bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 11);
         if (status == false) return;
 
-        draw_box(TITLE, MAG, "Stock Menu");
-        draw_line(LEFT, MAG, 3, MAG"Proses stock yang ada pada toko");
+        draw_box(TITLE, MAG, "Pengaturan Stok");
+        draw_line(LEFT, MAG, 3, MAG"Proses stok yang ada pada toko");
         draw_line(LEFT, MAG, 1, MAG"Silahkan pilih menu dibawah!");
         draw_decor(MAG);
-        draw_line(LEFT, MAG, 0, "1. Lihat stock yang ada");
-        draw_line(LEFT, MAG, 0, "2. Tambah stock baru");
-        draw_line(LEFT, MAG, 0, "3. Hapus stock");
+        draw_line(LEFT, MAG, 0, "1. Lihat stok yang ada");
+        draw_line(LEFT, MAG, 0, "2. Tambah stok baru");
+        draw_line(LEFT, MAG, 0, "3. Hapus stok");
         draw_line(LEFT, MAG, 1, RED"0. Keluar");
         draw_decor(MAG);
         draw_input(MAG, 0, "Input:");
@@ -1125,7 +1131,7 @@ void display_admin_stock_delete(){
 
     FILE* database_new = fopen(temp_file, "wb");
     if (!database_new) {
-        draw_dialog_err("Idk, failed to create temp file ig!");
+        draw_dialog_err("Idk, failed to create temp file ig...");
         fclose(database_file);
         return;
     }
@@ -1191,7 +1197,7 @@ void display_admin_broker(){
     uint8_t i;
     while(fread(&user, sizeof(data_t), 1, database_file) == 1){
         if (user.type == USER) continue;
-        draw_line(LEFT, MAG, 0, "%2i | %-s",
+        draw_line(LEFT, MAG, 1, WHT"%2i | "MAG"%-s",
             ++i, user.username
         );
     }

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
 #include "tubes_input.h"
 #include "tubes_handler.h"

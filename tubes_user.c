@@ -44,17 +44,18 @@ void display_user_status() {
             }
 
             term_clean();
-            draw_init(CENTER_CENTER, 1, 1, WIDTH, user.order.orderCount + 5);
-            draw_box(TITLE, MAG, "Daftar Order Anda");
-            draw_line(LEFT, MAG, 0, "Pilih order yang ingin diupdate:");
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, user.order.orderCount + 6);
+            draw_box(TITLE, BLU, "Daftar Order Anda");
+            draw_line(LEFT, BLU, 0, "Pilih order yang ingin diupdate:");
+            draw_decor(BLU);
             for (int i = 0; i < user.order.orderCount; i++) {
-                draw_line(LEFT, MAG, 0, "%d. %s - %s",
+                draw_line(LEFT, BLU, 0, "%d. %-12s : %s",
                         i+1,
                         user.order.orders[i],
                         user.order.orderStatus[i]);
             }
-            draw_decor(MAG);
-            draw_input(MAG, 0, "Masukkan nomor order:");
+            draw_decor(BLU);
+            draw_input(BLU, 0, "Masukkan nomor order:");
             draw_end();
 
             draw_restore_input();
@@ -70,13 +71,13 @@ void display_user_status() {
 
             term_clean();
             draw_init(CENTER_CENTER, 1, 1, WIDTH, 8);
-            draw_box(TITLE, MAG, "Update Status Order");
-            draw_line(LEFT, MAG, 2, BLU"Order          : "WHT"%s", user.order.orders[order_num]);
-            draw_line(LEFT, MAG, 2, CYN"Alamat         : "WHT"%s", user.order.alamat[order_num]);
-            draw_line(LEFT, MAG, 2, YEL"Telepon        : "WHT"%s", user.order.telepon[order_num]);
-            draw_line(LEFT, MAG, 2, GRN"Status saat ini: "WHT"%s", user.order.orderStatus[order_num]);
-            draw_decor(MAG);
-            draw_input(MAG, 0, "Status baru:");
+            draw_box(TITLE, BLU, "Update Status Order");
+            draw_line(LEFT, BLU, 2, BLU"Order          : "WHT"%s", user.order.orders[order_num]);
+            draw_line(LEFT, BLU, 2, CYN"Alamat         : "WHT"%s", user.order.alamat[order_num]);
+            draw_line(LEFT, BLU, 2, YEL"Telepon        : "WHT"%s", user.order.telepon[order_num]);
+            draw_line(LEFT, BLU, 2, GRN"Status saat ini: "WHT"%s", user.order.orderStatus[order_num]);
+            draw_decor(BLU);
+            draw_input(BLU, 0, "Status baru:");
             draw_end();
 
             input_string(new_status);
@@ -120,19 +121,20 @@ void display_user_profile(){
 
             char username[MAX_STRLEN];
 
-            draw_init(CENTER_CENTER, 1, 1, WIDTH, user->order.orderCount + 8);
-            draw_box(TITLE, MAG, "Profil User");
-            draw_line(LEFT, MAG, 0, "Nama User\t: %s", user->username);
-            draw_line(LEFT, MAG, 0, "Status\t\t: %s", (user->banned) ? "Ban" : "Aman");
-            draw_line(LEFT, MAG, 0, "Jumlah terorder: %i", user->order.orderCount);
-            draw_line(LEFT, MAG, 0, "Orderan\t:");
+            draw_init(CENTER_CENTER, 1, 1, WIDTH, user->order.orderCount + 9);
+            draw_box(TITLE, BLU, "Profil User");
+            draw_line(LEFT, BLU, 0, "Nama User      : %s", user->username);
+            draw_line(LEFT, BLU, 0, "Status         : %s", (user->banned) ? "Ban" : "Aman");
+            draw_line(LEFT, BLU, 0, "Jumlah terorder: %i", user->order.orderCount);
+            draw_decor(BLU);
+            draw_line(CENTER, BLU, 1, BLU_BG" Orderan: ");
             for (int i = 0; i < user->order.orderCount; i++){
-                draw_line(LEFT, MAG, 0, "%2i. %s : %s",
+                draw_line(LEFT, BLU, 0, "%2i. %-12s : %s",
                     i + 1, user->order.orders[i], user->order.orderStatus[i]
                 );
             }
-            draw_decor(MAG);
-            draw_line(CENTER, MAG, 2, MAG_BG BLK" Press enter to continue... ");
+            draw_decor(BLU);
+            draw_line(CENTER, BLU, 2, BLU_BG BLK" Press enter to continue... ");
             draw_end();
 
             getchar();
@@ -163,7 +165,7 @@ void display_user_menu() {
         if (status == false) return;
 
         draw_box(TITLE, BLU, "User Menu");
-        draw_line(LEFT, BLU, 5, BLU"Selamat datang di "MAG"D'Milsurp"RST", "GRN"%s"RST, current_user);
+        draw_line(LEFT, BLU, 5, BLU"Selamat datang di "BLU"D'Milsurp"RST", "GRN"%s"RST, current_user);
         draw_line(LEFT, BLU, 1, BLU"Pilih opsi dibawah untuk memulai memesan orderan!");
         draw_decor(BLU);
         draw_line(LEFT, BLU, 0, "1. Lihat Profil");
@@ -332,14 +334,14 @@ void display_user_feedback(){
     term_clean();
     draw_init(CENTER_CENTER, 1, 1, WIDTH, 5);
     draw_box(TITLE, BLU, "Beri Feedback");
-    draw_line(LEFT, BLU, 1, BLU"Berikan masukan untuk aplikasi kami!");
-    draw_line(LEFT, BLU, 0, "Rating (1-10) : ");
-    draw_line(LEFT, BLU, 0, "Deskripsi     : ");
+    draw_line(LEFT, BLU, 0, WHT"Berikan uneg-uneg kalian di aplikasi ini!");
+    draw_line(LEFT, BLU, 1, GRN"Rating (1-10) : ");
+    draw_line(LEFT, BLU, 1, GRN"Deskripsi     : ");
 
     draw_change_current_line(2);
-    draw_input(BLU, 0, "Rating (0-10) : ");
+    draw_input(BLU, 1, GRN"Rating (0-10) : ");
     input_number(&rating);
-    draw_input(BLU, 0, "Deskripsi     : ");
+    draw_input(BLU, 1, GRN"Deskripsi     : ");
     input_string(teks);
     draw_end();
 
