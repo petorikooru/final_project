@@ -70,7 +70,6 @@ void pesan_kirim(const char *teks){
     }
 
     time_t time_raw;
-    struct tm *time_info;
     time(&time_raw);
     current_timestamp = localtime(&time_raw);
 
@@ -88,7 +87,7 @@ void pesan_kirim(const char *teks){
     fflush(pesan_ptr);
 }
 
-bool pesan_clear(const char *nama, const user_t type){
+bool pesan_clear(){
     if (pesan_ptr != NULL) {
         log_print_err("Please end the pesan chain first!");
         return false;
@@ -112,7 +111,7 @@ bool pesan_clear(const char *nama, const user_t type){
     return true;
 }
 
-bool pesan_purge(const char *nama){
+bool pesan_purge(char *username){
     if (pesan_ptr != NULL) {
         log_print_err("Please end the pesan chain first!");
         return false;
@@ -122,7 +121,7 @@ bool pesan_purge(const char *nama){
     FILE *read_ptr = fopen(PESAN_FILE, "rb");
 
     while (fread(&pesan, sizeof(pesan_t), 1, read_ptr) == 1) {
-        if (strcmp(current_user, pesan.nama) == 0)
+        if (strcmp(username, pesan.nama) == 0)
             fwrite(&pesan, sizeof(pesan_t), 1, write_ptr);
     }
     fflush(write_ptr);
@@ -143,7 +142,7 @@ void pesan_end() {
 }
 
 // Multithreaded
-void *pesan_update(void *arg){
+void *pesan_update(){
     FILE *current_ptr;
 
     current_ptr = pesan_ptr;
@@ -172,6 +171,7 @@ void *pesan_update(void *arg){
 
         size_previous = size_current;
     }
+    return NULL;
 }
 
 void display_pesan_start(char *nama, user_t tipe){
@@ -199,7 +199,7 @@ void display_pesan_start(char *nama, user_t tipe){
             draw_line(LEFT, BLU, 0, "3. Hapus seluruh percakapan");
             draw_line(LEFT, BLU, 1, RED"0. Keluar");
             draw_decor(BLU);
-            draw_input(BLU, 0, "Input:");
+            draw_input(BLU, 0, "Input :");
             draw_end();
 
             input_number(&choice);
@@ -238,7 +238,7 @@ void display_pesan_start(char *nama, user_t tipe){
             draw_line(LEFT, BLU, 0, "2. Hapus hanya pesan dari anda");
             draw_line(LEFT, BLU, 1, RED"0. Keluar");
             draw_decor(BLU);
-            draw_input(BLU, 0, "Input:");
+            draw_input(BLU, 0, "Input :");
             draw_end();
 
             input_number(&choice);
@@ -249,7 +249,6 @@ void display_pesan_start(char *nama, user_t tipe){
                     break;
                 case CLEAR:
                     display_pesan_clear();
-                    log_print_err("asdf");
                     break;
                 case EXIT:
                     return;
@@ -288,7 +287,7 @@ void display_pesan_clear(){
     input_string(choice);
 
     if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0) {
-        pesan_clear(current_user, current_type);
+        pesan_clear();
 
         bool status = draw_init(CENTER_CENTER, 1, 1, WIDTH, 5);
         if (status == false) return;
@@ -304,7 +303,7 @@ void display_pesan_purge(){
 
     char choice[MAX_STRLEN];
 
-    draw_dialog_confirmation("Apa anda yakin ingin MENGHAPUS SELURUH anda?");
+    draw_dialog_confirmation("Apa anda yakin ingin MENGHAPUS SEMUA percakapan?");
     input_string(choice);
 
     if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0) {

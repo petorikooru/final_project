@@ -22,9 +22,9 @@ void pesan_kirim(const char *teks);
 void pesan_print();
 void pesan_end();
 
-bool pesan_clear(const char *nama, const user_t type);
-bool pesan_purge(const char *nama);
-void *pesan_update(void *arg);
+bool pesan_clear();
+bool pesan_purge(char *username);
+void *pesan_update();
 
 // Use this instead to start the conversation
 void display_pesan_start(char *nama, user_t tipe);

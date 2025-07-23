@@ -51,7 +51,7 @@ int main(int argc, char *argv[]){
             printf(
                 "Usage: ./tubes.bin <debug_mode>\n"
                 "+ message\t: Run message debug mode \n"
-                "+ user\t: Run manajemen debug mode \n"
+                "+ user\t\t: Run manajemen debug mode \n"
                 "+ admin\t\t: Run admin debug mode \n"
                 "No argument: Run normal mode \n"
             );
@@ -83,7 +83,7 @@ void debug_message(){
         draw_line(LEFT, YEL, 0, "2: User");
         draw_line(LEFT, YEL, 1, RED"0: Exit");
         draw_decor(YEL);
-        draw_input(YEL, 0, "Input:");
+        draw_input(YEL, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -94,7 +94,7 @@ void debug_message(){
 
                 draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
                 draw_box(TITLE, YEL, "Message Debug");
-                draw_input(YEL, 0, "User you want to chat: ");
+                draw_input(YEL, 0, "User you want to chat :");
                 draw_end();
 
                 input_string(username);
@@ -106,7 +106,7 @@ void debug_message(){
 
                 draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
                 draw_box(TITLE, YEL, "Message Debug");
-                draw_input(YEL, 0, "Who are you: ");
+                draw_input(YEL, 0, "Who are you :");
                 draw_end();
 
                 input_string(username);
@@ -147,11 +147,11 @@ void display_utama(){
         draw_line(LEFT, CYN, 1, CYN"membeli barang permainan yang menyenangkan!");
         draw_line(LEFT, CYN, 1, MAG"Silahkan pilih menu dibawah!");
         draw_decor(CYN);
-        draw_line(LEFT, CYN, 0, "1. Pergi ke menu USER");
-        draw_line(LEFT, CYN, 0, "2. Pergi ke menu BROKER");
+        draw_line(LEFT, CYN, 0, "1. Pergi ke menu User");
+        draw_line(LEFT, CYN, 0, "2. Pergi ke menu Broker");
         draw_line(LEFT, CYN, 1, RED"0. Keluar");
         draw_decor(CYN);
-        draw_input(CYN, 0, "Input:");
+        draw_input(CYN, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -164,6 +164,8 @@ void display_utama(){
                 display_admin_start();
                 break;
             case M_EXIT:
+                draw_dialog_info("Selamat tinggal!");
+                display_end(SIGTERM);
                 return;
             default:
                 draw_dialog_err("Input tidak valid!");
@@ -171,5 +173,4 @@ void display_utama(){
         }
     }
 
-    display_end(SIGTERM);
 }

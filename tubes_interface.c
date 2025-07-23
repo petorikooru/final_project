@@ -322,30 +322,26 @@ void draw_line(const align_t align, const char* color, const uint8_t count, cons
     else
         SET_COLOR(color);
 
-    const uint8_t width_offset = current_width - 4;
-    const uint8_t string_len = strlen(string) - (count * 4);
+    const uint8_t string_len = strlen(string) - (count * 5);
     check_width = string_len;
 
     if (align == LEFT) {
         printf("%s", string);
+        SET_OFFSET(string_len + current_x + 3, current_line);
 
     } else if (align == CENTER) {
-        const uint8_t padding = (current_width - string_len) / 2 - 2;
+        const uint8_t padding = current_x + (current_width - string_len) / 2;
 
-        for (uint8_t i = 0; i < padding; i++) {
-            putchar(' ');
-        }
+        SET_OFFSET(padding, current_line);
         printf("%s", string);
 
     } else {
-        const uint8_t padding = current_width - string_len;
-        for (uint16_t i = 0; i < padding; i++) {
-            putchar(' ');
-        }
+        const uint8_t padding = current_x + current_width - string_len;
+
+        SET_OFFSET(padding, current_line);
         printf("%s", string);
     }
 
-    SET_OFFSET(string_len + current_x + 3, current_line);
     SET_COLOR(RST);
     draw_check();
     current_line++;
@@ -369,9 +365,7 @@ void draw_input(const char* color, const uint8_t count, const char* format, ...)
     SET_OFFSET(current_x + 2, current_line);
     SET_COLOR(color);
 
-    const uint8_t width_offset = current_width - 4;
-    const uint8_t string_len = strlen(string) - (count * 4);
-
+    const uint8_t string_len = strlen(string) - (count * 5);
     check_width = string_len;
 
     printf("%s", string);
@@ -451,7 +445,7 @@ void draw_dialog_confirmation(const char* format, ...){
 
     draw_box(TITLE, YEL, "Confirmation Dialog");
     draw_line(LEFT, YEL, 1, YEL"%s", string);
-    draw_input(RED, 1, YEL"(y/N):");
+    draw_input(RED, 1, YEL"(y/N) :");
     draw_end();
 }
 

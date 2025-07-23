@@ -61,7 +61,7 @@ void display_stok_start(data_t *user){
         draw_line(LEFT, BLU, 0, "3. Beli Barang");
         draw_line(LEFT, BLU, 1, RED"0. Keluar");
         draw_decor(BLU);
-        draw_input(BLU, 0, "Input:");
+        draw_input(BLU, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -109,7 +109,7 @@ void display_stok_view(){
         draw_line(LEFT, BLU, 0, "3. [Rp...] Urutkan berdasarkan harga");
         draw_line(LEFT, BLU, 1, RED"0. Keluar");
         draw_decor(BLU);
-        draw_input(BLU, 0, "Input:");
+        draw_input(BLU, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -391,7 +391,7 @@ void display_stok_cari(){
 
     draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
     draw_box(TITLE, MAG, "Order Produk");
-    draw_input(MAG, 1, MAG"Nama produk:");
+    draw_input(MAG, 1, MAG"Nama produk :");
     draw_end();
 
     input_string(nama);
@@ -442,7 +442,7 @@ void display_stok_beli() {
 
     draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
     draw_box(TITLE, MAG, "Order Produk");
-    draw_input(MAG, 1, MAG"Nama produk:");
+    draw_input(MAG, 1, MAG"Nama produk :");
     draw_end();
 
     input_string(nama);
@@ -474,7 +474,7 @@ void display_stok_beli() {
             draw_line(LEFT, MAG, 1, MAG"Jumlah stok\t: "WHT"%d", produk.jumlah);
             draw_decor(MAG);
             draw_line(LEFT, MAG, 0, "Apakah anda yakin ingin membelinya?");
-            draw_input(MAG, 1, "(Y/n)    ");
+            draw_input(MAG, 1, YEL"(Y/n) :");
             draw_end();
 
             input_string(certainty);
@@ -488,8 +488,8 @@ void display_stok_beli() {
 
             draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
             draw_box(TITLE, MAG, "Data Pengiriman");
-            draw_line(LEFT, MAG, 1, MAG"Alamat anda  :");
-            draw_line(LEFT, MAG, 1, MAG"Nomor telepon:");
+            draw_line(LEFT, MAG, 1, MAG"Alamat anda   :");
+            draw_line(LEFT, MAG, 1, MAG"Nomor telepon :");
 
             int order_index = -1;
             for (int i = 0; i < MAX_ORDERS; i++) {
@@ -505,9 +505,9 @@ void display_stok_beli() {
             }
 
             draw_change_current_line(1);
-            draw_input(MAG, 1, MAG"Alamat anda  :");
+            draw_input(MAG, 1, MAG"Alamat anda   :");
             input_string(data.order.alamat[order_index]);
-            draw_input(MAG, 1, MAG"Nomor telepon:");
+            draw_input(MAG, 1, MAG"Nomor telepon :");
             input_string(data.order.telepon[order_index]);
             draw_end();
 

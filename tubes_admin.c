@@ -60,7 +60,7 @@ void display_admin_start() {
         draw_line(LEFT, BLU, 0, "2. Registrasi Broker");
         draw_line(LEFT, BLU, 1, RED"0. Keluar");
         draw_decor(BLU);
-        draw_input(BLU, 0, "Input:");
+        draw_input(BLU, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -92,7 +92,7 @@ void display_admin_register(){
         term_clean();
         draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
         draw_box(TITLE, MAG, "Registrasi Broker");
-        draw_input(BLU, 1, MAG"Input token broker:");
+        draw_input(BLU, 1, MAG"Input token broker :");
         input_string(token);
 
         if (strcmp(token, TOKEN_STRING) != 0) {
@@ -111,13 +111,13 @@ void display_admin_register(){
     draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
 
     draw_box(TITLE, MAG, "Registrasi Broker");
-    draw_line(LEFT, MAG, 1, MAG"Username:");
-    draw_line(LEFT, MAG, 1, MAG"Password:");
+    draw_line(LEFT, MAG, 1, MAG"Username :");
+    draw_line(LEFT, MAG, 1, MAG"Password :");
 
     draw_change_current_line(1);
-    draw_input(MAG, 1, MAG"Username:");
+    draw_input(MAG, 1, MAG"Username :");
     input_string(username);
-    draw_input(MAG, 1, MAG"Password:");
+    draw_input(MAG, 1, MAG"Password :");
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
@@ -152,13 +152,13 @@ void display_admin_login(){
 
         draw_init(CENTER_CENTER, 1, 1, WIDTH, 4);
         draw_box(TITLE, MAG, "Login Admin");
-        draw_line(LEFT, MAG, 1, MAG"Username:");
-        draw_line(LEFT, MAG, 1, MAG"Password:");
+        draw_line(LEFT, MAG, 1, MAG"Username :");
+        draw_line(LEFT, MAG, 1, MAG"Password :");
 
         draw_change_current_line(1);
-        draw_input(MAG, 1, MAG"Username: ");
+        draw_input(MAG, 1, MAG"Username :");
         input_string(username);
-        draw_input(MAG, 1, MAG"Password: ");
+        draw_input(MAG, 1, MAG"Password :");
         input_string(password);
 
         draw_end();
@@ -219,7 +219,7 @@ void display_admin_menu() {
         draw_line(LEFT, MAG, 0, "6. Lihat feedback aplikasi");
         draw_line(LEFT, MAG, 1, RED"0. Keluar");
         draw_decor(MAG);
-        draw_input(MAG, 0, "Input:");
+        draw_input(MAG, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -282,7 +282,7 @@ void display_admin_user(){
 
         draw_line(LEFT, MAG, 1, RED"0. Keluar");
         draw_decor(MAG);
-        draw_input(MAG, 0, "Input:");
+        draw_input(MAG, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -372,7 +372,7 @@ void display_admin_user_view(){
     if (status == false) return;
 
     draw_box(TITLE, MAG, "Lihat User");
-    draw_input(MAG, 1, MAG"Pilih user:");
+    draw_input(MAG, 1, MAG"Pilih user :");
     draw_end();
 
     input_string(username);
@@ -392,16 +392,13 @@ void display_admin_user_view(){
             found = true;
 
             term_clean();
-
-            char username[MAX_STRLEN];
-
             draw_init(CENTER_CENTER, 1, 1, WIDTH, user->order.orderCount + 9);
             draw_box(TITLE, MAG, "Profil User");
             draw_line(LEFT, MAG, 0, "Nama User      : %s", user->username);
             draw_line(LEFT, MAG, 0, "Status         : %s", (user->banned) ? "Ban" : "Aman");
             draw_line(LEFT, MAG, 0, "Jumlah terorder: %i", user->order.orderCount);
             draw_decor(MAG);
-            draw_line(CENTER, MAG, 1, MAG_BG"Orderan:");
+            draw_line(CENTER, MAG, 2, MAG_BG BLK"Orderan:");
             for (int i = 0; i < user->order.orderCount; i++){
                 draw_line(LEFT, MAG, 0, "%2i. %-10s : %s",
                     i + 1, user->order.orders[i], user->order.orderStatus[i]
@@ -440,7 +437,7 @@ void display_admin_user_delete() {
     if (status == false) return;
 
     draw_box(TITLE, MAG, "Hapus User");
-    draw_input(MAG, 1, MAG"Pilih user:");
+    draw_input(MAG, 1, MAG"Pilih user :");
     draw_end();
 
     input_string(username);
@@ -528,7 +525,7 @@ void display_admin_user_ban(){
     if (status == false) return;
 
     draw_box(TITLE, MAG, "Ban User");
-    draw_input(MAG, 1, MAG"Pilih user:");
+    draw_input(MAG, 1, MAG"Pilih user :");
     draw_end();
 
     input_string(username);
@@ -579,7 +576,7 @@ void display_admin_user_unban(){
     if (status == false) return;
 
     draw_box(TITLE, MAG, "Unban User");
-    draw_input(MAG, 1, MAG"Pilih user:");
+    draw_input(MAG, 1, MAG"Pilih user :");
     draw_end();
 
     input_string(username);
@@ -642,7 +639,7 @@ void display_admin_order(){
         draw_line(LEFT, MAG, 0, "3. Hapus orderan user");
         draw_line(LEFT, MAG, 1, RED"0. Keluar");
         draw_decor(MAG);
-        draw_input(MAG, 0, "Input:");
+        draw_input(MAG, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -729,13 +726,12 @@ void display_admin_order_process(){
     char username[MAX_STRLEN]   = {0};
     char new_status[MAX_STRLEN] = {0};
     bool found = false;
-    bool found_order = false;
     int order;
 
     draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
 
     draw_box(TITLE, MAG, "Proses Orderan User");
-    draw_input(MAG, 1, MAG"Pilih user:");
+    draw_input(MAG, 1, MAG"Pilih user :");
     draw_end();
 
     input_string(username);
@@ -747,8 +743,6 @@ void display_admin_order_process(){
     }
 
     data_t user;
-    bool update_success = false;
-
     while(fread(&user, sizeof(data_t), 1, database_file) == 1) {
         if (strcmp(user.username, username) == 0) {
             found = true;
@@ -758,7 +752,6 @@ void display_admin_order_process(){
                 break;
             }
 
-            int i;
             uint8_t height = user.order.orderCount + 7;
 
             term_clean();
@@ -777,17 +770,15 @@ void display_admin_order_process(){
                 }
             }
             draw_decor(MAG);
-            draw_input(MAG, 1, MAG"Input : ");
+            draw_input(MAG, 1, MAG"Input :");
             draw_end();
 
             input_number(&order);
             order--;
             if (strlen(user.order.orders[order]) == 0){
-                found_order = false;
                 draw_dialog_err("Order tidak ditemukan!");
                 break;
-            } else
-                found_order = true;
+            }
 
             term_clean();
             draw_init(CENTER_CENTER, 1, 1, WIDTH, 10);
@@ -799,7 +790,7 @@ void display_admin_order_process(){
             draw_line(LEFT, MAG, 0, "Nomor Telepon    : %s", user.order.telepon[order]);
             draw_line(LEFT, MAG, 1, YEL"Status Orderan   "WHT": %s", user.order.orderStatus[order]);
             draw_decor(MAG);
-            draw_input(MAG, 0, "Ganti status: ");
+            draw_input(MAG, 0, "Ganti status :");
             draw_end();
 
             input_string(new_status);
@@ -833,11 +824,10 @@ void display_admin_order_delete() {
     char order_name[MAX_STRLEN] = {0};
     char certainty[MAX_STRLEN] = {0};
     bool user_found = false;
-    bool order_found = false;
 
     draw_init(CENTER_CENTER, 1, 1, WIDTH, 3);
     draw_box(TITLE, MAG, "Hapus Order User");
-    draw_input(MAG, 1, MAG"Username:");
+    draw_input(MAG, 1, MAG"Username :");
     draw_end();
 
     input_string(username);
@@ -849,8 +839,6 @@ void display_admin_order_delete() {
     }
 
     data_t user;
-    bool update_success = false;
-
     while(fread(&user, sizeof(data_t), 1, database_file) == 1) {
         if (strcmp(user.username, username) == 0) {
             user_found = true;
@@ -874,7 +862,7 @@ void display_admin_order_delete() {
                 }
             }
             draw_decor(MAG);
-            draw_input(MAG, 1, MAG"Pilih order (nomor):");
+            draw_input(MAG, 1, MAG"Pilih order (nomor) :");
             draw_end();
 
             input_string(order_name);
@@ -899,7 +887,6 @@ void display_admin_order_delete() {
 
                 fseek(database_file, -sizeof(data_t), SEEK_CUR);
                 if (fwrite(&user, sizeof(data_t), 1, database_file) == 1) {
-                    update_success = true;
                     draw_dialog_info("Order berhasil dihapus!");
                 } else {
                     draw_dialog_err("Gagal menyimpan perubahan!");
@@ -942,7 +929,7 @@ void display_admin_stock(){
         draw_line(LEFT, MAG, 0, "3. Hapus stok");
         draw_line(LEFT, MAG, 1, RED"0. Keluar");
         draw_decor(MAG);
-        draw_input(MAG, 0, "Input:");
+        draw_input(MAG, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -1022,7 +1009,7 @@ void display_admin_stock_add() {
     if (!status) return;
 
     draw_box(TITLE, MAG, "Tambah produk");
-    draw_input(MAG, 1, MAG"Input nama produk:");
+    draw_input(MAG, 1, MAG"Input nama produk :");
     draw_end();
     input_string(nama);
 
@@ -1116,7 +1103,7 @@ void display_admin_stock_delete(){
     if (status == false) return;
 
     draw_box(TITLE, MAG, "Hapus produk");
-    draw_input(MAG, 1, MAG"Input nama produk:");
+    draw_input(MAG, 1, MAG"Input nama produk :");
     draw_end();
 
     input_string(nama);
@@ -1194,7 +1181,7 @@ void display_admin_broker(){
     draw_line(LEFT, MAG, 0, "No | Nama Broker");
     draw_decor(MAG);
 
-    uint8_t i;
+    uint8_t i = 0;
     while(fread(&user, sizeof(data_t), 1, database_file) == 1){
         if (user.type == USER) continue;
         draw_line(LEFT, MAG, 1, WHT"%2i | "MAG"%-s",
@@ -1221,7 +1208,7 @@ void display_admin_message(){
     if (status == false) return;
 
     draw_box(TITLE, MAG, "Kirim Pesan");
-    draw_input(MAG, 1, MAG"Kirim pesan ke:");
+    draw_input(MAG, 1, MAG"Kirim pesan ke :");
     draw_end();
 
     input_string(username);
@@ -1292,7 +1279,6 @@ void display_admin_feedback() {
     draw_line(CENTER, BLU, 2, YEL_BG BLK" Press enter to continue... ");
     draw_end();
 
-    // Clean up
     fclose(feedback_file);
     getchar();
 }

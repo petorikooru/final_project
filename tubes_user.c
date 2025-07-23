@@ -55,7 +55,7 @@ void display_user_status() {
                         user.order.orderStatus[i]);
             }
             draw_decor(BLU);
-            draw_input(BLU, 0, "Masukkan nomor order:");
+            draw_input(BLU, 0, "Masukkan nomor order :");
             draw_end();
 
             draw_restore_input();
@@ -77,7 +77,7 @@ void display_user_status() {
             draw_line(LEFT, BLU, 2, YEL"Telepon        : "WHT"%s", user.order.telepon[order_num]);
             draw_line(LEFT, BLU, 2, GRN"Status saat ini: "WHT"%s", user.order.orderStatus[order_num]);
             draw_decor(BLU);
-            draw_input(BLU, 0, "Status baru:");
+            draw_input(BLU, 0, "Status baru :");
             draw_end();
 
             input_string(new_status);
@@ -108,7 +108,6 @@ void display_user_profile(){
 
     FILE* database_file = fopen(DATABASE_FILE, "rb");
     data_t* user = malloc(sizeof(data_t));
-    bool found = false;
 
     if (!database_file){
         draw_dialog_err("File doesn't exist!");
@@ -118,16 +117,13 @@ void display_user_profile(){
         if (strcmp(user->username, current_user) == 0) {
 
             term_clean();
-
-            char username[MAX_STRLEN];
-
             draw_init(CENTER_CENTER, 1, 1, WIDTH, user->order.orderCount + 9);
             draw_box(TITLE, BLU, "Profil User");
             draw_line(LEFT, BLU, 0, "Nama User      : %s", user->username);
             draw_line(LEFT, BLU, 0, "Status         : %s", (user->banned) ? "Ban" : "Aman");
             draw_line(LEFT, BLU, 0, "Jumlah terorder: %i", user->order.orderCount);
             draw_decor(BLU);
-            draw_line(CENTER, BLU, 1, BLU_BG" Orderan: ");
+            draw_line(CENTER, BLU, 2, BLU_BG BLK" Orderan: ");
             for (int i = 0; i < user->order.orderCount; i++){
                 draw_line(LEFT, BLU, 0, "%2i. %-12s : %s",
                     i + 1, user->order.orders[i], user->order.orderStatus[i]
@@ -216,13 +212,13 @@ void display_user_register(){
     if (status == false) return;
 
     draw_box(TITLE, BLU, "Registrasi User");
-    draw_line(LEFT, BLU, 1, BLU"Username:");
-    draw_line(LEFT, BLU, 1, BLU"Password:");
+    draw_line(LEFT, BLU, 1, BLU"Username :");
+    draw_line(LEFT, BLU, 1, BLU"Password :");
 
     draw_change_current_line(1);
-    draw_input(BLU, 1, BLU"Username:");
+    draw_input(BLU, 1, BLU"Username :");
     input_string(username);
-    draw_input(BLU, 1, BLU"Password:");
+    draw_input(BLU, 1, BLU"Password :");
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
@@ -252,13 +248,13 @@ void display_user_login(){
     if (status == false) return;
 
     draw_box(TITLE, BLU, "Login User");
-    draw_line(LEFT, BLU, 1, BLU"Username:");
-    draw_line(LEFT, BLU, 1, BLU"Password:");
+    draw_line(LEFT, BLU, 1, BLU"Username :");
+    draw_line(LEFT, BLU, 1, BLU"Password :");
 
     draw_change_current_line(1);
-    draw_input(BLU, 1, BLU"Username: ");
+    draw_input(BLU, 1, BLU"Username :");
     input_string(username);
-    draw_input(BLU, 1, BLU"Password: ");
+    draw_input(BLU, 1, BLU"Password :");
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
@@ -306,7 +302,7 @@ void display_user_start() {
         draw_line(LEFT, BLU, 0, "2. Registrasi User");
         draw_line(LEFT, BLU, 1, RED"0. Keluar");
         draw_decor(BLU);
-        draw_input(BLU, 0, "Input:");
+        draw_input(BLU, 0, "Input :");
         draw_end();
 
         input_number(&choice);
@@ -335,13 +331,13 @@ void display_user_feedback(){
     draw_init(CENTER_CENTER, 1, 1, WIDTH, 5);
     draw_box(TITLE, BLU, "Beri Feedback");
     draw_line(LEFT, BLU, 0, WHT"Berikan uneg-uneg kalian di aplikasi ini!");
-    draw_line(LEFT, BLU, 1, GRN"Rating (1-10) : ");
-    draw_line(LEFT, BLU, 1, GRN"Deskripsi     : ");
+    draw_line(LEFT, BLU, 1, GRN"Rating (1-10) :");
+    draw_line(LEFT, BLU, 1, GRN"Deskripsi     :");
 
     draw_change_current_line(2);
-    draw_input(BLU, 1, GRN"Rating (0-10) : ");
+    draw_input(BLU, 1, GRN"Rating (0-10) :");
     input_number(&rating);
-    draw_input(BLU, 1, GRN"Deskripsi     : ");
+    draw_input(BLU, 1, GRN"Deskripsi     :");
     input_string(teks);
     draw_end();
 
