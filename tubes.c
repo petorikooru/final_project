@@ -286,9 +286,9 @@ void display_utama(){
         printf("1. Pergi ke menu User                          \n");
         printf("2. Pergi ke menu Broker                        \n");
         printf("0. Keluar                                      \n");
-        printf("Input :");
+        printf("input :  ");
 
-        scanf("%i", &choice);
+        scanf("%i", &choice); getchar();
 
         switch(choice) {
             case M_USER:
@@ -343,7 +343,7 @@ void display_user_status() {
             for (int i = 0; i < user.order.orderCount; i++) {
                 printf("%d. %-12s : %s\n", i+1, user.order.orders[i], user.order.orderStatus[i]);
             }
-            printf("Masukkan nomor order :");
+            printf("Masukkan nomor order : ");
 
             input_string(order_name);
             int order_num = atoi(order_name) - 1;
@@ -436,7 +436,7 @@ void display_user_menu() {
         printf("0. Logout                                           \n");
         printf("Input:");
 
-        scanf("%i",&choice);
+        scanf("%i",&choice); getchar();
 
         switch(choice) {
             case M_PROFIL:
@@ -549,9 +549,9 @@ void display_user_start() {
         printf("1. Login User                                   \n");
         printf("2. Registrasi User                              \n");
         printf("0. Keluar                                       \n");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i",&choice);
+        scanf("%i",&choice); getchar();
 
         switch(choice) {
             case M_LOGIN:
@@ -578,7 +578,7 @@ void display_user_feedback(){
     printf("================== Beri Feedback ==================     \n");
     printf("Berikan uneg-uneg kalian di aplikasi ini!               \n");
     printf("Rating (1-10) :");
-    scanf("%i", &rating);
+    scanf("%i", &rating); getchar();
     printf("Deskripsi     :");
     input_string(teks);
 
@@ -625,9 +625,9 @@ void display_stok_start(data_t *user){
         printf("2. Cari Barang                                  \n");
         printf("3. Beli Barang                                  \n");
         printf("0. Keluar                                       \n");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i",&choice);
+        scanf("%i",&choice); getchar();
 
         switch(choice) {
             case M_LIHAT:
@@ -666,9 +666,9 @@ void display_stok_view(){
         printf("2. [1 2 3] Urutkan berdasarkan jumlah           \n");
         printf("3. [Rp...] Urutkan berdasarkan harga            \n");
         printf("0. Keluar");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i", &choice);
+        scanf("%i", &choice); getchar();
 
         switch(choice) {
             case M_NAMA:
@@ -1060,9 +1060,9 @@ void display_admin_start() {
         printf("1. Login Broker                                     \n");
         printf("2. Registrasi Broker                                \n");
         printf("0. Keluar                                           \n");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i", &choice);
+        scanf("%i", &choice); getchar();
 
         switch(choice) {
             case M_LOGIN:
@@ -1216,9 +1216,9 @@ void display_admin_menu() {
         printf("5. Kirim pesan ke user                              \n");
         printf("6. Lihat feedback aplikasi                          \n");
         printf("0. Keluar                                           \n");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i", &choice);
+        scanf("%i", &choice); getchar();
 
         switch(choice) {
             case M_USER:
@@ -1273,9 +1273,9 @@ void display_admin_user(){
         printf("4. Ban user                                             \n");
         printf("5. Unban user                                           \n");
         printf("0. Keluar                                               \n");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i", &choice);
+        scanf("%i", &choice); getchar();
 
         switch(choice) {
             case M_VIEWALL:
@@ -1607,9 +1607,9 @@ void display_admin_order(){
         printf("2. Proses orderan user                                  \n");
         printf("3. Hapus orderan user                                   \n");
         printf("0. Keluar                                               \n");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i", &choice);
+        scanf("%i", &choice); getchar();
 
         switch(choice) {
             case M_VIEW:
@@ -1733,8 +1733,8 @@ void display_admin_order_process(){
                     );
                 }
             }
-            printf("Input :");
-            scanf("%i",&order);
+            printf("input : ");
+            scanf("%i",&order); getchar();
 
             order--;
             if (strlen(user.order.orders[order]) == 0){
@@ -1881,9 +1881,9 @@ void display_admin_stock(){
         printf("2. Tambah stok baru\n");
         printf("3. Hapus stok\n");
         printf("0. Keluar\n");
-        printf("Input :");
+        printf("input : ");
 
-        scanf("%i", &choice);
+        scanf("%i", &choice); getchar();
 
         switch(choice) {
             case M_VIEW:
@@ -1968,9 +1968,9 @@ void display_admin_stock_add() {
     printf("================== Tambah produk ==================\n");
     printf("Nama Produk: %s\n", nama);
     printf("Jumlah Produk :");
-    scanf("%i", &jumlah);
+    scanf("%i", &jumlah); getchar();
     printf("Harga Produk  :");
-    scanf("%i", &harga);
+    scanf("%i", &harga); getchar();
 
     printf("Apakah anda yakin? (y/N)");
     input_string(certainty);
@@ -2315,9 +2315,9 @@ void display_pesan_start(char *nama, user_t tipe){
             printf("2. Hapus hanya pesan dari anda\n");
             printf("3. Hapus seluruh percakapan\n");
             printf("0. Keluar\n");
-            printf("Input :");
+            printf("input : ");
 
-            scanf("%i", &choice);
+            scanf("%i", &choice); getchar();
 
             switch (choice) {
                 case CHAT:
@@ -2349,9 +2349,9 @@ void display_pesan_start(char *nama, user_t tipe){
             printf("1. Mulai percakapan!\n");
             printf("2. Hapus hanya pesan dari anda\n");
             printf("0. Keluar\n");
-            printf("Input :");
+            printf("input :  ");
 
-            scanf("%i", &choice);
+            scanf("%i", &choice); getchar();
 
 
             switch (choice) {
