@@ -19,11 +19,11 @@
 #define NAMA_BANK       "CIMB NIAGA"
 #define ATAS_NAMA       "DAFFA RIZQY ANDIKA"
 
-#define DATABASE_FILE   "database.tb"
-#define FEEDBACK_FILE   "feedback.tb"
-#define STOCK_FILE      "stok.tb"
-#define PESAN_FILE      "message.tb"
-#define PESAN_FILE_TEMP "message.tb.tmp"
+#define DATABASE_FILE   "database.dat"
+#define FEEDBACK_FILE   "feedback.dat"
+#define STOCK_FILE      "stok.dat"
+#define PESAN_FILE      "message.dat"
+#define PESAN_FILE_TEMP "message.dat.tmp"
 
 #define TOKEN_STRING    "Agnes Tachyon"
 
@@ -84,6 +84,31 @@ database_t  database_user_login(const char *username, const char *password, data
 void database_update(data_t *user);
 void database_user_init(const char *username, const char *password, data_t *const use, user_t type);
 
+/*
+ * admin_start -> admin_login
+ *                admin_register
+ *
+ * admin_login -> admin_menu -> admin_user
+ *                              admin_stock
+ *                              admin_order
+ *                              admin_broker
+ *                              admin_message
+ *                              admin_feedback
+ *
+ * admin_user -> viewall
+ *               view
+ *               delete
+ *               ban
+ *               unban
+ *
+ * admin_stock -> view
+ *                add
+ *                delete
+ *
+ * admin_order -> view
+ *                process
+ *                delete
+ */
 void display_admin_start();
 void display_admin_login();
 void display_admin_register();
@@ -286,7 +311,7 @@ void display_utama(){
         printf("1. Pergi ke menu User                          \n");
         printf("2. Pergi ke menu Broker                        \n");
         printf("0. Keluar                                      \n");
-        printf("input :  ");
+        printf("Input : ");
 
         scanf("%i", &choice); getchar();
 
@@ -361,7 +386,7 @@ void display_user_status() {
             printf("Alamat          : %s\n", user.order.alamat[order_num]);
             printf("Telepon         : %s\n", user.order.telepon[order_num]);
             printf("Status saat ini : %s\n", user.order.orderStatus[order_num]);
-            printf("Status baru :");
+            printf("Status baru : ");
 
             input_string(new_status);
 
@@ -399,7 +424,7 @@ void display_user_profile(){
             printf("Nama User       : %s\n", user->username);
             printf("Status          : %s\n", (user->banned) ? "Ban" : "Aman");
             printf("Jumlah terorder : %i\n", user->order.orderCount);
-            printf("Orderan: ");
+            printf("Orderan: \n");
             for (int i = 0; i < user->order.orderCount; i++){
                 printf("%2i. %-12s : %s\n", i + 1, user->order.orders[i], user->order.orderStatus[i]);
             }
@@ -434,7 +459,7 @@ void display_user_menu() {
         printf("4. Kirim Feedback Aplikasi                          \n");
         printf("5. Kirim Pesan kepada Broker                        \n");
         printf("0. Logout                                           \n");
-        printf("Input:");
+        printf("Input : ");
 
         scanf("%i",&choice); getchar();
 
@@ -470,10 +495,10 @@ void display_user_register(){
     char password[MAX_STRLEN];
 
     term_clean();
-    printf("================== Registrasi User ==================   \n");
-    printf("Username :");
+    printf("================== Registrasi User ================== \n");
+    printf("Username : ");
     input_string(username);
-    printf("Password :");
+    printf("Password : ");
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
@@ -500,10 +525,10 @@ void display_user_login(){
     char password[MAX_STRLEN];
 
     term_clean();
-    printf("================== Login User ==================   \n");
-    printf("Username :");
+    printf("================== Login User ==================\n");
+    printf("Username : ");
     input_string(username);
-    printf("Password :");
+    printf("Password : ");
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
@@ -524,7 +549,9 @@ void display_user_login(){
 
                     display_user_init(user);
                     display_user_menu();
+
                     printf("Selamat berbelanja lagi!");
+                    getchar();
                 }
                 break;
             case D_NONE:
@@ -549,7 +576,7 @@ void display_user_start() {
         printf("1. Login User                                   \n");
         printf("2. Registrasi User                              \n");
         printf("0. Keluar                                       \n");
-        printf("input : ");
+        printf("Input : ");
 
         scanf("%i",&choice); getchar();
 
@@ -577,9 +604,9 @@ void display_user_feedback(){
     term_clean();
     printf("================== Beri Feedback ==================     \n");
     printf("Berikan uneg-uneg kalian di aplikasi ini!               \n");
-    printf("Rating (1-10) :");
+    printf("Rating (1-10) : ");
     scanf("%i", &rating); getchar();
-    printf("Deskripsi     :");
+    printf("Deskripsi     : ");
     input_string(teks);
 
     FILE *feedback_file = fopen(FEEDBACK_FILE, "ab");
@@ -602,7 +629,7 @@ void display_user_feedback(){
     }
     fclose(feedback_file);
 
-    printf("Terim akasih telah memberikan feedback!");
+    printf("Terima kasih telah memberikan feedback!");
     getchar();
 
     return;
@@ -625,7 +652,7 @@ void display_stok_start(data_t *user){
         printf("2. Cari Barang                                  \n");
         printf("3. Beli Barang                                  \n");
         printf("0. Keluar                                       \n");
-        printf("input : ");
+        printf("Input : ");
 
         scanf("%i",&choice); getchar();
 
@@ -665,8 +692,8 @@ void display_stok_view(){
         printf("1. [A - Z] Urutkan berdasarkan nama             \n");
         printf("2. [1 2 3] Urutkan berdasarkan jumlah           \n");
         printf("3. [Rp...] Urutkan berdasarkan harga            \n");
-        printf("0. Keluar");
-        printf("input : ");
+        printf("0. Keluar\n");
+        printf("Input : ");
 
         scanf("%i", &choice); getchar();
 
@@ -901,7 +928,7 @@ void display_stok_cari(){
     char nama[MAX_STRLEN];
 
     printf("================== Order Produk ================== \n");
-    printf("Nama produk :");
+    printf("Nama produk : ");
 
     input_string(nama);
 
@@ -951,7 +978,7 @@ void display_stok_beli() {
     bool found = false;
 
     printf("================== Order Produk ================== \n");
-    printf("Nama produk :");
+    printf("Nama produk : ");
 
     input_string(nama);
 
@@ -981,7 +1008,7 @@ void display_stok_beli() {
             printf("Harga produk  : %d\n", produk.harga);
             printf("Jumlah stok   : %d\n", produk.jumlah);
             printf("Apakah anda yakin ingin membelinya?\n");
-            printf("(Y/n) :");
+            printf("(Y/n) : ");
 
             input_string(certainty);
 
@@ -1006,10 +1033,10 @@ void display_stok_beli() {
             }
 
             term_clean();
-            printf("================== Data Pengiriman ==================");
-            printf("Alamat anda   :");
+            printf("================== Data Pengiriman ==================\n");
+            printf("Alamat anda   : ");
             input_string(data.order.alamat[order_index]);
-            printf("Nomor telepon :");
+            printf("Nomor telepon : ");
             input_string(data.order.telepon[order_index]);
 
             strncpy(data.order.orders[order_index], produk.nama, MAX_STRLEN);
@@ -1020,19 +1047,17 @@ void display_stok_beli() {
             fseek(database_file, -sizeof(product_t), SEEK_CUR);
             fwrite(&produk, sizeof(product_t), 1, database_file);
 
-            if (order_success) {
-                database_update(&data);
+            database_update(&data);
 
-                term_clean();
-                printf("================== Pembayaran ==================    \n");
-                printf("Transfer ke rekening ini ya!                        \n");
-                printf("Konfirmasi Pembayaran melalui chat!                 \n");
-                printf("Nomor Rekening : %s\n", NOMOR_REKENING);
-                printf("Nama Bank      : %s\n", NAMA_BANK);
-                printf("Atas Nama      : %s\n", ATAS_NAMA);
+            term_clean();
+            printf("================== Pembayaran ==================    \n");
+            printf("Transfer ke rekening ini ya!                        \n");
+            printf("Konfirmasi Pembayaran melalui chat!                 \n");
+            printf("Nomor Rekening : %s\n", NOMOR_REKENING);
+            printf("Nama Bank      : %s\n", NAMA_BANK);
+            printf("Atas Nama      : %s\n", ATAS_NAMA);
 
-                getchar();
-            }
+            getchar();
             break;
         }
     }
@@ -1060,7 +1085,7 @@ void display_admin_start() {
         printf("1. Login Broker                                     \n");
         printf("2. Registrasi Broker                                \n");
         printf("0. Keluar                                           \n");
-        printf("input : ");
+        printf("Input : ");
 
         scanf("%i", &choice); getchar();
 
@@ -1114,9 +1139,9 @@ void display_admin_register(){
 
     term_clean();
     printf("================== Registrasi Broker ==================   \n");
-    printf("Username :");
+    printf("Username : ");
     input_string(username);
-    printf("Password :");
+    printf("Password : ");
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
@@ -1151,9 +1176,9 @@ void display_admin_login(){
     while (!failed) {
         term_clean();
         printf("================== Login Broker ==================   \n");
-        printf("Username :");
+        printf("Username : ");
         input_string(username);
-        printf("Password :");
+        printf("Password : ");
         input_string(password);
 
         data_t* user = malloc(sizeof(data_t));
@@ -1216,7 +1241,7 @@ void display_admin_menu() {
         printf("5. Kirim pesan ke user                              \n");
         printf("6. Lihat feedback aplikasi                          \n");
         printf("0. Keluar                                           \n");
-        printf("input : ");
+        printf("Input : ");
 
         scanf("%i", &choice); getchar();
 
@@ -1273,7 +1298,7 @@ void display_admin_user(){
         printf("4. Ban user                                             \n");
         printf("5. Unban user                                           \n");
         printf("0. Keluar                                               \n");
-        printf("input : ");
+        printf("Input : ");
 
         scanf("%i", &choice); getchar();
 
@@ -1328,7 +1353,7 @@ void display_admin_user_viewall() {
     printf("================== Daftar Pengguna ==================\n");
     printf("No | Nama Pengguna            | Status  | Orderan\n");
 
-    int i;
+    int i = 0;
     while(fread(&user, sizeof(data_t), 1, database_file) == 1) {
         if (user.type != BROKER && strlen(user.username) > 0) {
             const char* status = user.banned ? "BANNED" : "Aman";
@@ -1349,7 +1374,7 @@ void display_admin_user_view(){
 
     term_clean();
     printf("================== Lihat User ==================\n");
-    printf("Pilih user :");
+    printf("Pilih user : ");
     input_string(username);
 
 
@@ -1374,7 +1399,7 @@ void display_admin_user_view(){
             printf("Nama User       : %s\n", user->username);
             printf("Status          : %s\n", (user->banned) ? "Ban" : "Aman");
             printf("Jumlah terorder : %i\n", user->order.orderCount);
-            printf("Orderan: ");
+            printf("Orderan: \n");
             for (int i = 0; i < user->order.orderCount; i++){
                 printf("%2i. %-12s : %s\n", i + 1, user->order.orders[i], user->order.orderStatus[i]);
             }
@@ -1403,7 +1428,7 @@ void display_admin_user_delete() {
 
     term_clean();
     printf("================== Hapus User ==================\n");
-    printf("Pilih user :");
+    printf("Pilih user : ");
 
     input_string(username);
 
@@ -1414,7 +1439,7 @@ void display_admin_user_delete() {
         return;
     }
 
-    const char* temp_file = "database.tb.temp";
+    const char* temp_file = "database.dat.temp";
     FILE* database_new = fopen(temp_file, "wb");
 
     data_t* user = malloc(sizeof(data_t));
@@ -1487,7 +1512,7 @@ void display_admin_user_ban(){
 
     term_clean();
     printf("================== Ban User ==================\n");
-    printf("Pilih user :");
+    printf("Pilih user : ");
 
     input_string(username);
 
@@ -1543,7 +1568,7 @@ void display_admin_user_unban(){
 
     term_clean();
     printf("================== Ban User ==================\n");
-    printf("Pilih user :");
+    printf("Pilih user : ");
 
     input_string(username);
 
@@ -1569,7 +1594,7 @@ void display_admin_user_unban(){
                 fseek(database_file, -sizeof(data_t), SEEK_CUR);
                 fwrite(user, sizeof(data_t), 1, database_file);
 
-                printf("User berhasil diban!");
+                printf("User berhasil unban!");
                 getchar();
             } else {
                 printf("Aksi dibatalkan!");
@@ -1607,7 +1632,7 @@ void display_admin_order(){
         printf("2. Proses orderan user                                  \n");
         printf("3. Hapus orderan user                                   \n");
         printf("0. Keluar                                               \n");
-        printf("input : ");
+        printf("Input : ");
 
         scanf("%i", &choice); getchar();
 
@@ -1666,7 +1691,7 @@ void display_admin_order_view(){
         if (user.type == USER && user.order.orderCount > 0) {
             for (int j = 0; j < user.order.orderCount; j++) {
                 if (strlen(user.order.orders[j]) > 0) {
-                    printf("%2i | %-14s | %-14s | %-s",
+                    printf("%2i | %-14s | %-14s | %-s\n",
                         ++i,
                         user.username,
                         user.order.orders[j],
@@ -1694,7 +1719,7 @@ void display_admin_order_process(){
     int order;
 
     printf("================== Proses Orderan User ==================\n");
-    printf("Pilih user :");
+    printf("Pilih user : ");
 
     input_string(username);
 
@@ -1723,17 +1748,17 @@ void display_admin_order_process(){
             term_clean();
             printf("================== Proses Orderan User ==================\n");
             printf("Nama User : %s\n", user.username);
-            printf("Pilih orderan:");
+            printf("Pilih orderan:\n");
             for (int j = 0; j < user.order.orderCount; j++) {
                 if (strlen(user.order.orders[j]) > 0) {
-                    printf("%2i. %-14s : %-s",
+                    printf("%2i. %-14s : %-s\n",
                         j + 1,
                         user.order.orders[j],
                         user.order.orderStatus[j]
                     );
                 }
             }
-            printf("input : ");
+            printf("Input : ");
             scanf("%i",&order); getchar();
 
             order--;
@@ -1820,7 +1845,7 @@ void display_admin_order_delete() {
                             user.order.orderStatus[i]);
                 }
             }
-            printf("Pilih order (nomor) :");
+            printf("Pilih order (nomor) : ");
 
             input_string(order_name);
             int order_num = atoi(order_name) - 1;
@@ -1881,7 +1906,7 @@ void display_admin_stock(){
         printf("2. Tambah stok baru\n");
         printf("3. Hapus stok\n");
         printf("0. Keluar\n");
-        printf("input : ");
+        printf("Input : ");
 
         scanf("%i", &choice); getchar();
 
@@ -1938,6 +1963,7 @@ void display_admin_stock_view(){
             );
         }
     }
+    fflush(stdout);
     fclose(database_file);
     getchar();
 
@@ -1954,7 +1980,7 @@ void display_admin_stock_add() {
     term_clean();
 
     printf("================== Tambah produk ==================\n");
-    printf("Input nama produk :");
+    printf("Input nama produk : ");
 
     input_string(nama);
 
@@ -1967,12 +1993,12 @@ void display_admin_stock_add() {
     term_clean();
     printf("================== Tambah produk ==================\n");
     printf("Nama Produk: %s\n", nama);
-    printf("Jumlah Produk :");
+    printf("Jumlah Produk : ");
     scanf("%i", &jumlah); getchar();
-    printf("Harga Produk  :");
+    printf("Harga Produk  : ");
     scanf("%i", &harga); getchar();
 
-    printf("Apakah anda yakin? (y/N)");
+    printf("Apakah anda yakin? (y/N) ");
     input_string(certainty);
 
     if (strcasecmp(certainty, "y") != 0) {
@@ -2011,6 +2037,7 @@ void display_admin_stock_add() {
     }
 
     printf("Produk berhasil terupdate!");
+    getchar();
     fclose(database_file);
 }
 
@@ -2019,12 +2046,12 @@ void display_admin_stock_delete(){
     char certainty[MAX_STRLEN] = {0};
     bool found = false;
     bool is_deleted = false;
-    char temp_file[] = "database.tb.tmp";
+    char temp_file[] = "database.dat.tmp";
 
     term_clean();
 
     printf("================== Hapus produk ==================\n");
-    printf("Input nama produk :");
+    printf("Input nama produk : ");
 
     input_string(nama);
 
@@ -2097,12 +2124,12 @@ void display_admin_broker(){
 
     term_clean();
     printf("================== Lihat seluruh broker ==================\n");
-    printf("No | Nama Broker");
+    printf("No | Nama Broker\n");
 
     uint8_t i = 0;
     while(fread(&user, sizeof(data_t), 1, database_file) == 1){
         if (user.type == USER) continue;
-        printf("%2i | %-s",
+        printf("%2i | %-s\n",
             ++i, user.username
         );
     }
@@ -2117,7 +2144,7 @@ void display_admin_message(){
 
     char username[MAX_STRLEN];
     printf("================== Kirim Pesan ==================\n");
-    printf("Kirim pesan ke :");
+    printf("Kirim pesan ke : ");
 
     input_string(username);
 
@@ -2179,7 +2206,7 @@ void display_admin_feedback() {
 
     int i = 0;
     while (fread(&feedback, sizeof(feedback_t), 1, feedback_file) == 1) {
-        printf("%-2i | %-11s | %-15s |  %2d    | %-s",
+        printf("%-2i | %-11s | %-15s |  %2d    | %-s\n",
             ++i,
             feedback.date,
             feedback.username,
@@ -2216,14 +2243,14 @@ void pesan_print(){
             pesan_exist = true;
             if (current_type == BROKER){
                 if (pesan.whois == BROKER)
-                    printf("%s | You: %s\n", pesan.timestamp, pesan.teks);
+                    printf("%s You: %s\n", pesan.timestamp, pesan.teks);
                 else
-                    printf("%s | %s: %s\n", pesan.timestamp, pesan.nama, pesan.teks);;
+                    printf("%s %s: %s\n", pesan.timestamp, pesan.nama, pesan.teks);;
             } else {
                 if (pesan.whois == BROKER)
-                    printf("%s | Broker : %s\n", pesan.timestamp, pesan.teks);
+                    printf("%s Broker : %s\n", pesan.timestamp, pesan.teks);
                 else
-                    printf("%s | You : %s\n", pesan.timestamp, pesan.teks);;
+                    printf("%s You : %s\n", pesan.timestamp, pesan.teks);;
             }
         }
     }
@@ -2315,7 +2342,7 @@ void display_pesan_start(char *nama, user_t tipe){
             printf("2. Hapus hanya pesan dari anda\n");
             printf("3. Hapus seluruh percakapan\n");
             printf("0. Keluar\n");
-            printf("input : ");
+            printf("Input : ");
 
             scanf("%i", &choice); getchar();
 
@@ -2349,7 +2376,7 @@ void display_pesan_start(char *nama, user_t tipe){
             printf("1. Mulai percakapan!\n");
             printf("2. Hapus hanya pesan dari anda\n");
             printf("0. Keluar\n");
-            printf("input :  ");
+            printf("Input : ");
 
             scanf("%i", &choice); getchar();
 
@@ -2376,10 +2403,13 @@ void display_pesan_message() {
 
     char teks[256];
     while (true) {
+        term_clean();
         pesan_print();
 
         printf("\n(Ketik \"/exit\" untuk keluar)\n");
         printf("[Ketikan sesuatu disini!] : ");
+
+        input_string(teks);
 
         if (strcmp(teks, "/exit") == 0) break;
 
