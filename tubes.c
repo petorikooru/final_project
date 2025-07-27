@@ -6,8 +6,10 @@
 #include <time.h>
 #include <ctype.h>
 
+// Windows compability
 #ifdef _WIN32
     #define term_clean() system("cls");
+// Linux and Mac (and BSD ig...)
 #else
     #define term_clean() system("clear");
 #endif
@@ -15,27 +17,28 @@
 #define MAX_ORDERS 50
 #define MAX_STRLEN 256
 
-#define NOMOR_REKENING  "707563602600"
-#define NAMA_BANK       "CIMB NIAGA"
-#define ATAS_NAMA       "DAFFA RIZQY ANDIKA"
+#define DEFAULT_BROKER_NAME     "Admin"
+#define DEFAULT_BROKER_PASSWORD "123"
 
-#define DATABASE_FILE   "database.dat"
-#define FEEDBACK_FILE   "feedback.dat"
-#define STOCK_FILE      "stok.dat"
-#define PESAN_FILE      "message.dat"
-#define PESAN_FILE_TEMP "message.dat.tmp"
+#define NOMOR_REKENING      "707563602600"
+#define NAMA_BANK           "CIMB NIAGA"
+#define ATAS_NAMA           "DAFFA RIZQY ANDIKA"
 
-#define TOKEN_STRING    "Agnes Tachyon"
+#define FEEDBACK_FILE       "feedback.dat"
+#define DATABASE_FILE       "database.dat"
+#define STOCK_FILE          "stok.dat"
+#define PESAN_FILE          "message.dat"
 
-typedef enum {
-    D_BROKER    = 0,
-    D_USER      = 1,
-    D_NONE      = 2,
-} database_t;
+#define DATABASE_FILE_TEMP  "database.dat.temp"
+#define STOCK_FILE_TEMP     "stok.dat.temp"
+#define PESAN_FILE_TEMP     "message.dat.temp"
+
+#define TOKEN_STRING        "Agnes Tachyon"
 
 typedef enum {
     BROKER      = 0,
     USER        = 1,
+    NONE        = 2,
 } user_t;
 
 typedef struct {
@@ -50,6 +53,7 @@ typedef struct {
     char username   [MAX_STRLEN];
     char password   [MAX_STRLEN];
     bool banned;
+
     user_t type;
     order_t order;
 } data_t;
@@ -58,6 +62,7 @@ typedef struct {
     char    username    [MAX_STRLEN];
     char    date        [MAX_STRLEN];
     char    text        [MAX_STRLEN];
+
     uint8_t rating;
 } feedback_t;
 
@@ -67,11 +72,6 @@ typedef struct {
     uint32_t        harga;
 } product_t;
 
-typedef enum {
-    C_SUCCESS,
-    C_FAILED,
-} choice_t;
-
 typedef struct {
     char    nama[256];
     char    teks[256];
@@ -79,36 +79,8 @@ typedef struct {
     user_t  whois;
 } pesan_t;
 
-choice_t    database_user_signup( const char *username, const char *password, data_t *database_user, user_t type);
-database_t  database_user_login(const char *username, const char *password, data_t *database_user, user_t type);
-void database_update(data_t *user);
-void database_user_init(const char *username, const char *password, data_t *const use, user_t type);
+void display_utama();
 
-/*
- * admin_start -> admin_login
- *                admin_register
- *
- * admin_login -> admin_menu -> admin_user
- *                              admin_stock
- *                              admin_order
- *                              admin_broker
- *                              admin_message
- *                              admin_feedback
- *
- * admin_user -> viewall
- *               view
- *               delete
- *               ban
- *               unban
- *
- * admin_stock -> view
- *                add
- *                delete
- *
- * admin_order -> view
- *                process
- *                delete
- */
 void display_admin_start();
 void display_admin_login();
 void display_admin_register();
@@ -132,17 +104,28 @@ void display_admin_message();
 void display_admin_feedback();
 
 void display_user_start();
+void display_user_init(data_t *user);
+void display_user_login();
+void display_user_register();
+void display_user_menu();
+void display_user_profile();
+void display_user_status();
 void display_user_feedback();
-void display_stok_start(data_t *user);
+
+void display_stok_start();
 void display_stok_cari();
 void display_stok_beli();
 void display_stok_view();
-void display_stok_view_name();
-void display_stok_view_number();
-void display_stok_view_price();
+void display_stok_view_product(int choice);
+
 void sort_nama(product_t *items, int jmlh_brang);
 void sort_harga(product_t *items, int jmlh_brang);
 void sort_jumlah(product_t *items, int jmlh_brang);
+
+void display_pesan_start(char *nama, user_t tipe);
+void display_pesan_message();
+void display_pesan_clear();
+void display_pesan_purge();
 
 bool pesan_init();
 void pesan_kirim(const char *teks);
@@ -152,145 +135,23 @@ bool pesan_clear();
 bool pesan_purge(char *username);
 void *pesan_update();
 
-// Use this instead to start the conversation
-void display_pesan_start(char *nama, user_t tipe);
-void display_pesan_message();
-void display_pesan_clear();
-void display_pesan_purge();
+void    input_string(char string[]);
 
-char current_user[MAX_STRLEN];
+bool    database_user_signup(const char *username, const char *password, data_t *database_user, user_t type);
+user_t  database_user_login(const char *username, const char *password, data_t *database_user, user_t type);
+void    database_user_init(const char *username, const char *password, data_t *const use, user_t type);
+void    database_user_update(data_t *user);
 
-struct tm    *current_timestamp;
-user_t       current_type;
-pesan_t      pesan;
-FILE         *pesan_ptr;
-bool         end;
-data_t data;
+/* GLOBAL VARIABLES */
+char        current_user[MAX_STRLEN];
+user_t      current_type;
+pesan_t     pesan;
+FILE        *pesan_ptr;
+data_t      data;
+struct tm   *current_timestamp;
 
-void input_string(char string[]) {
-    fgets(string, MAX_STRLEN, stdin);
-    string[strlen(string) - 1] = '\0';
-}
-
-void database_update(data_t *user){
-    FILE    *database_file = fopen(DATABASE_FILE, "rb+");
-    data_t  *database_user = malloc(sizeof(data_t));
-
-    // Update to file
-    while (fread(database_user, sizeof(data_t), 1, database_file) == 1) {
-        if (strcmp(database_user->username, user->username) == 0) {
-            fseek(database_file, -sizeof(data_t), SEEK_CUR);
-            fwrite(user, sizeof(data_t), 1, database_file);
-            break;
-        }
-    }
-    fclose(database_file);
-    free(database_user);
-    return;
-}
-
-void database_create(FILE *database_file){
-    database_file = fopen(DATABASE_FILE, "wb");
-
-    // Create new admin user
-    const char username[] = "Admin";
-    const char password[] = "123";
-    data_t *admin = malloc(sizeof(data_t));
-
-    // Account creation
-    memcpy(admin->username, username, sizeof(username));
-    memcpy(admin->password, password, sizeof(password));
-    admin->banned = false;
-
-    fwrite(admin, sizeof(data_t), 1, database_file);
-    fclose(database_file);
-    free(admin);
-}
-
-void database_user_init(const char *username, const char *password,
-                        data_t *const user , const user_t type){
-    strncpy(user->username, username, sizeof(user->username));
-    strncpy(user->password, password, sizeof(user->password));
-
-    user->banned = false;
-    user->type  = type;
-
-    // Save the user data
-    FILE* database_file = fopen(DATABASE_FILE, "ab");
-    fwrite(user, sizeof(data_t), 1, database_file);
-    fclose(database_file);
-}
-
-database_t database_user_login(const char *username, const char *password, data_t *database_user, user_t type){
-    FILE* database_file = fopen(DATABASE_FILE, "rb");
-    if (!database_file) {
-        return D_NONE;
-    }
-
-    database_t user_type;
-    bool found = false;
-
-    while(fread(database_user, sizeof(data_t), 1, database_file) == 1){
-        if (strcmp(username, database_user->username) == 0){
-            found = true;
-
-            if (strcmp(database_user->password, password) == 0){
-                if (database_user->type == type)
-                    user_type = (database_t)type;
-                else {
-                    user_type = (database_t)database_user->type;
-                }
-                break;
-            } else {
-                printf("Wrong Password bleh :p\n");
-                user_type = D_NONE;
-                break;
-            }
-        }
-    }
-
-    if (!found){
-        printf("User tidak ditemukan! :p\n");
-        user_type = D_NONE;
-    }
-
-    fclose(database_file);
-    return user_type;
-}
-
-choice_t database_user_signup( const char *username, const char *password,
-                                   data_t *database_user, user_t type){
-    // If the user input blank
-    if (strlen(username) == 0){
-        printf("Username cannot be blank!\n");
-        return C_FAILED;
-    } else if (strlen(password) == 0){
-        printf("Password cannot be blank!\n");
-        return C_FAILED;
-    }
-
-    // Check whether the data exist or not yet
-    FILE* database_file = fopen(DATABASE_FILE, "rb+");
-    if (!database_file){
-        database_create(database_file);
-        database_file = fopen(DATABASE_FILE, "rb+");
-    }
-
-    // Check whether the username is already registered
-    bool found = false;
-    while(fread(database_user, sizeof(data_t), 1, database_file) == 1){
-        if (strcmp(username, database_user->username) == 0){
-            found = true;
-            break;
-        }
-    }
-
-    fclose(database_file);
-    if (found){
-        printf("Username already exist!\n");
-        return C_FAILED;
-    } else
-        return C_SUCCESS;
+int main(){
+    display_utama();
 }
 
 void display_utama(){
@@ -344,6 +205,7 @@ void display_user_status() {
 
     char order_name[MAX_STRLEN] = {0};
     char new_status[MAX_STRLEN] = {0};
+    int order_num;
 
     FILE* database_file = fopen(DATABASE_FILE, "rb+");
     if (!database_file) {
@@ -369,9 +231,8 @@ void display_user_status() {
                 printf("%d. %-12s : %s\n", i+1, user.order.orders[i], user.order.orderStatus[i]);
             }
             printf("Masukkan nomor order : ");
-
-            input_string(order_name);
-            int order_num = atoi(order_name) - 1;
+            scanf("%i", &order_num); getchar();
+            order_num -= 1;
 
             if (order_num < 0 || order_num >= user.order.orderCount) {
                 printf("Nomor order tidak valid!");
@@ -471,7 +332,7 @@ void display_user_menu() {
                 display_user_status();
                 break;
             case M_TAMBAH:
-                display_stok_start(&data);;
+                display_stok_start();
                 break;
             case M_PESAN:
                 display_pesan_start(current_user, USER);
@@ -502,16 +363,16 @@ void display_user_register(){
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
-    choice_t type = database_user_signup(username, password, user, USER);
+    bool type = database_user_signup(username, password, user, USER);
 
     switch(type){
-        case C_SUCCESS:
+        case true:
             printf("Registrasi berhasil!");
             getchar();
 
             database_user_init(username, password, user, USER);
             break;
-        case C_FAILED:
+        case false:
             printf("Gagal untuk membuat akun!");
             getchar();
 
@@ -532,17 +393,15 @@ void display_user_login(){
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
-    database_t type = database_user_login(username, password, user, USER);
+    user_t type = database_user_login(username, password, user, USER);
 
     switch(type){
-            case D_BROKER:
+            case BROKER:
                 printf("Mohon untuk pergi ke seleksi Admin!");
-                getchar();
                 break;
-            case D_USER:
+            case USER:
                 if (user->banned){
                     printf("Broker telah meng-ban anda!");
-                    getchar();
                 } else {
                     printf("Login berhasil!");
                     getchar();
@@ -551,12 +410,12 @@ void display_user_login(){
                     display_user_menu();
 
                     printf("Selamat berbelanja lagi!");
-                    getchar();
                 }
                 break;
-            case D_NONE:
+            case NONE:
                 break;
         }
+    getchar();
     free(user);
 }
 
@@ -614,6 +473,7 @@ void display_user_feedback(){
 
     feedback_t feedback = {0};
     if (strlen(teks) != 0) {
+        // Get the current timestamp
         time_t now = time(NULL);
         struct tm *local = localtime(&now);
 
@@ -635,7 +495,7 @@ void display_user_feedback(){
     return;
 }
 
-void display_stok_start(data_t *user){
+void display_stok_start(){
     typedef enum {
         M_LIHAT     = 1,
         M_CARI      = 2,
@@ -699,13 +559,9 @@ void display_stok_view(){
 
         switch(choice) {
             case M_NAMA:
-                display_stok_view_name();
-                break;
             case M_JUMLAH:
-                display_stok_view_number();
-                break;
             case M_HARGA:
-                display_stok_view_price();
+                display_stok_view_product(choice);
                 break;
             case M_KELUAR:
                 return;
@@ -717,7 +573,7 @@ void display_stok_view(){
     }
 }
 
-void display_stok_view_name(){
+void display_stok_view_product(int choice){
     term_clean();
 
     FILE* database_file = fopen(STOCK_FILE, "rb");
@@ -751,7 +607,13 @@ void display_stok_view_name(){
     }
     fclose(database_file);
 
-    sort_nama(produk_stok, jumlah_produk);
+    // Sorting stuff
+    if (choice == 1)
+        sort_nama(produk_stok, jumlah_produk);
+    else if (choice == 2)
+        sort_jumlah(produk_stok, jumlah_produk);
+    else
+        sort_harga(produk_stok, jumlah_produk);
 
     printf("================== Lihat seluruh produk ================== \n");
     printf("No | Nama Produk            | Stok | Harga\n");
@@ -769,117 +631,25 @@ void display_stok_view_name(){
     return;
 }
 
-void display_stok_view_number(){
-    term_clean();
-
-    FILE* database_file = fopen(STOCK_FILE, "rb");
-    if (!database_file) {
-        printf("Database stok tidak ditemukan!");
-        return;
-    }
-
-    // Mencari jumlah produk yang ada
-    product_t produk;
-    uint16_t jumlah_produk = 0;
-    while(fread(&produk, sizeof(product_t), 1, database_file) == 1) {
-        if (strlen(produk.nama) != 0)
-            jumlah_produk++;
-    }
-
-    if (jumlah_produk == 0) {
-        printf("Sepertinya masih belum ada produk...");
-        fclose(database_file);
-        return;
-    }
-
-    // Untuk diproses ke sortir nanti
-    product_t* produk_stok = malloc(jumlah_produk * sizeof(product_t));
-    rewind(database_file);
-
-    for (uint16_t i = 0; i < jumlah_produk; i++) {
-        fread(&produk_stok[i], sizeof(product_t), 1, database_file);
-    }
-    fclose(database_file);
-
-    sort_jumlah(produk_stok, jumlah_produk);
-
-    printf("================== Lihat seluruh produk ==================  \n");
-    printf("No | Nama Produk            | Stok | Harga \n");
-    for (uint8_t i = 0; i < jumlah_produk; i++) {
-        printf("%2i | %-22s | %-4i | %-8i\n",
-                i+1,
-                produk_stok[i].nama,
-                produk_stok[i].jumlah,
-                produk_stok[i].harga);
-    }
-    getchar();
-
-    free(produk_stok);
-    return;
-}
-
-void display_stok_view_price(){
-    term_clean();
-
-    FILE* database_file = fopen(STOCK_FILE, "rb");
-    if (!database_file) {
-        printf("Database stok tidak ditemukan!");
-        return;
-    }
-
-    // Mencari jumlah produk yang ada
-    product_t produk;
-    uint16_t jumlah_produk = 0;
-    while(fread(&produk, sizeof(product_t), 1, database_file) == 1) {
-        if (strlen(produk.nama) != 0)
-            jumlah_produk++;
-    }
-
-    if (jumlah_produk == 0) {
-        printf("Sepertinya masih belum ada produk...");
-        fclose(database_file);
-        return;
-    }
-
-    // Untuk diproses ke sortir nanti
-    product_t* produk_stok = malloc(jumlah_produk * sizeof(product_t));
-    rewind(database_file);
-
-    for (uint16_t i = 0; i < jumlah_produk; i++) {
-        fread(&produk_stok[i], sizeof(product_t), 1, database_file);
-    }
-    fclose(database_file);
-
-    sort_harga(produk_stok, jumlah_produk);
-
-    printf("================== Lihat seluruh produk ==================  \n");
-    printf("No | Nama Produk            | Stok | Harga \n");
-    for (uint8_t i = 0; i < jumlah_produk; i++) {
-        printf("%2i | %-22s | %-4i | %-8i\n",
-                i+1,
-                produk_stok[i].nama,
-                produk_stok[i].jumlah,
-                produk_stok[i].harga);
-    }
-    getchar();
-
-    free(produk_stok);
-    return;
-}
-
-// https://stackoverflow.com/a/25456826
+/* https://stackoverflow.com/a/25456826
+ * A better alternative of regular strcmp since
+ * it also consider the upper-lower case letter
+ */
 int cmpalph(const char *string_1, const char *string_2) {
-    const char *cp1 = string_1, *cp2 = string_2;
+    const char *cp1 = string_1;
+    const char *cp2 = string_2;
     int sccmp = 1;
 
-    for (; toupper(*cp1) == toupper(*cp2); cp1++, cp2++)
-        if (*cp1 == '\0')
-            sccmp = 0;
-    if (sccmp) return ((toupper(*cp1) < toupper(*cp2)) ? -1 : +1);
+    for (; toupper(*cp1) == toupper(*cp2); cp1++, cp2++){
+        if (*cp1 == '\0') sccmp = 0;
+    }
+    if (sccmp) 
+        return ((toupper(*cp1) < toupper(*cp2)) ? -1 : +1);
 
-    for (; *string_1 == *string_2; string_1++, string_2++)
-        if (*string_1 == '\0')
-            return 0;
+    for (; *string_1 == *string_2; string_1++, string_2++){
+        if (*string_1 == '\0') return 0;
+    }
+
     return ((*string_1 < *string_2) ? +1 : -1);
 }
 
@@ -970,7 +740,7 @@ void display_stok_cari(){
 }
 
 void display_stok_beli() {
-    display_stok_view_name();
+    display_stok_view_product(1);
     term_clean();
 
     char nama[MAX_STRLEN] = {0};
@@ -1012,7 +782,7 @@ void display_stok_beli() {
 
             input_string(certainty);
 
-            if (strcasecmp(certainty, "n") == 0) {
+            if (strcasecmp(certainty, "N") == 0) {
                 printf("Pembelian dibatalkan!");
                 getchar();
                 break;
@@ -1047,7 +817,7 @@ void display_stok_beli() {
             fseek(database_file, -sizeof(product_t), SEEK_CUR);
             fwrite(&produk, sizeof(product_t), 1, database_file);
 
-            database_update(&data);
+            database_user_update(&data);
 
             term_clean();
             printf("================== Pembayaran ==================    \n");
@@ -1136,8 +906,6 @@ void display_admin_register(){
     }
 
     term_clean();
-
-    term_clean();
     printf("================== Registrasi Broker ==================   \n");
     printf("Username : ");
     input_string(username);
@@ -1145,16 +913,16 @@ void display_admin_register(){
     input_string(password);
 
     data_t* user = malloc(sizeof(data_t));
-    choice_t type = database_user_signup(username, password, user, BROKER);
+    bool type = database_user_signup(username, password, user, BROKER);
 
     switch(type){
-        case C_SUCCESS:
+        case true:
             printf("Registrasi berhasil!");
             getchar();
 
             database_user_init(username, password, user, BROKER);
             break;
-        case C_FAILED:
+        case false:
             printf("Gagal untuk membuat akun!");
             getchar();
 
@@ -1164,10 +932,6 @@ void display_admin_register(){
 }
 
 void display_admin_login(){
-    typedef enum {
-        C_SUCCESS,
-        C_FAILED,
-    } choice_t;
     char username[MAX_STRLEN];
     char password[MAX_STRLEN];
     uint8_t chance = 3;
@@ -1182,27 +946,27 @@ void display_admin_login(){
         input_string(password);
 
         data_t* user = malloc(sizeof(data_t));
-        database_t type = database_user_login(username, password, user, BROKER);
+        user_t type = database_user_login(username, password, user, BROKER);
         free(user);
 
         switch(type){
-            case D_BROKER:
+            case BROKER:
                 printf("Login berhasil!");
                 getchar();
 
                 display_admin_menu();
                 return;
-            case D_USER:
+            case USER:
                 printf("Anda bukanlah Broker!");
                 getchar();
 
                 failed = true;
                 return;
-            case D_NONE:
-                chance--;
-
+            case NONE:
                 printf("Login gagal!");
                 getchar();
+
+                chance--;
                 break;
         }
         if (chance == 0) {
@@ -1377,7 +1141,6 @@ void display_admin_user_view(){
     printf("Pilih user : ");
     input_string(username);
 
-
     FILE* database_file = fopen(DATABASE_FILE, "rb");
     if (!database_file){
         printf("File doesn't exist!");
@@ -1389,7 +1152,6 @@ void display_admin_user_view(){
     data_t* user = malloc(sizeof(data_t));
     bool found = false;
 
-    term_clean();
     while(fread(user, sizeof(data_t), 1, database_file) == 1){
         if (strcmp(user->username, username) == 0) {
             found = true;
@@ -1403,14 +1165,12 @@ void display_admin_user_view(){
             for (int i = 0; i < user->order.orderCount; i++){
                 printf("%2i. %-12s : %s\n", i + 1, user->order.orders[i], user->order.orderStatus[i]);
             }
-            getchar();
         }
     }
-
     if (found == false) {
         printf("User tidak ditemukan!");
-        getchar();
     }
+    getchar();
 
     free(user);
     fclose(database_file);
@@ -1439,8 +1199,7 @@ void display_admin_user_delete() {
         return;
     }
 
-    const char* temp_file = "database.dat.temp";
-    FILE* database_new = fopen(temp_file, "wb");
+    FILE* database_new = fopen(DATABASE_FILE_TEMP, "wb");
 
     data_t* user = malloc(sizeof(data_t));
     while(fread(user, sizeof(data_t), 1, database_file) == 1) {
@@ -1463,7 +1222,7 @@ void display_admin_user_delete() {
 
             input_string(certainty);
 
-            if (strcmp(certainty, "y") == 0 || strcmp(certainty, "Y") == 0) {
+            if (strcasecmp(certainty, "Y") == 0) {
                 is_deleted = true;
                 continue;
             } else {
@@ -1486,19 +1245,19 @@ void display_admin_user_delete() {
         printf("User tidak ditemukan!");
         getchar();
 
-        remove(temp_file);
+        remove(DATABASE_FILE_TEMP);
         return;
     }
 
     if (is_deleted) {
         pesan_purge(username);
         remove(DATABASE_FILE);
-        rename(temp_file, DATABASE_FILE);
+        rename(DATABASE_FILE_TEMP, DATABASE_FILE);
 
         printf("User berhasil dihapus!");
         getchar();
     } else {
-        remove(temp_file);
+        remove(DATABASE_FILE_TEMP);
     }
 }
 
@@ -1532,7 +1291,7 @@ void display_admin_user_ban(){
 
             input_string(certainty);
 
-            if (strcmp(certainty, "y") == 0 || strcmp(certainty, "Y") == 0 ) {
+            if (strcasecmp(certainty, "Y") == 0) {
                 user->banned = true;
 
                 fseek(database_file, -sizeof(data_t), SEEK_CUR);
@@ -1577,7 +1336,7 @@ void display_admin_user_unban(){
     bool found = false;
 
     if (!database_file){
-        printf("File doesn't exist!");
+        printf("File tidak ada!");
         getchar();
     }
 
@@ -1588,7 +1347,7 @@ void display_admin_user_unban(){
 
             input_string(certainty);
 
-            if (strcmp(certainty, "y") == 0 || strcmp(certainty, "Y") == 0 ) {
+            if (strcasecmp(certainty, "Y") == 0) {
                 user->banned = false;
 
                 fseek(database_file, -sizeof(data_t), SEEK_CUR);
@@ -1743,11 +1502,6 @@ void display_admin_order_process(){
                 break;
             }
 
-            uint8_t height = user.order.orderCount + 7;
-
-            term_clean();
-            printf("================== Proses Orderan User ==================\n");
-            printf("Nama User : %s\n", user.username);
             printf("Pilih orderan:\n");
             for (int j = 0; j < user.order.orderCount; j++) {
                 if (strlen(user.order.orders[j]) > 0) {
@@ -1805,13 +1559,13 @@ void display_admin_order_process(){
 }
 
 void display_admin_order_delete() {
-    term_clean();
-
     char username[MAX_STRLEN] = {0};
     char order_name[MAX_STRLEN] = {0};
     char certainty[MAX_STRLEN] = {0};
     bool user_found = false;
+    int order_num;
 
+    term_clean();
     printf("================== Hapus Order User ==================\n");
     printf("Username : ");
 
@@ -1835,6 +1589,7 @@ void display_admin_order_delete() {
                 break;
             }
 
+            term_clean();
             printf("================== Daftar Order User ==================\n");
             printf("Orderan %s:\n", username);
             for (int i = 0; i < MAX_ORDERS; i++) {
@@ -1846,9 +1601,8 @@ void display_admin_order_delete() {
                 }
             }
             printf("Pilih order (nomor) : ");
-
-            input_string(order_name);
-            int order_num = atoi(order_name) - 1;
+            scanf("%i", &order_num); getchar();
+            order_num -= 1;
 
             if (order_num < 0 || order_num >= MAX_ORDERS ||
                 strlen(user.order.orders[order_num]) == 0) {
@@ -1860,7 +1614,7 @@ void display_admin_order_delete() {
             printf("Hapus order '%s'? (y/N) ", user.order.orders[order_num]);
             input_string(certainty);
 
-            if (strcasecmp(certainty, "y") == 0) {
+            if (strcasecmp(certainty, "Y") == 0) {
                 memset(&user.order.orders[order_num], 0, MAX_STRLEN);
                 memset(&user.order.orderStatus[order_num], 0, MAX_STRLEN);
                 memset(&user.order.alamat[order_num], 0, MAX_STRLEN);
@@ -1872,12 +1626,13 @@ void display_admin_order_delete() {
 
                 printf("Order berhasil dihapus!");
                 getchar();
-                }
-            } else {
+            }
+            else {
                 printf("Penghapusan dibatalkan");
                 getchar();
             }
-        break;
+            break;
+        }
     }
 
     fclose(database_file);
@@ -1938,24 +1693,12 @@ void display_admin_stock_view(){
         return;
     }
 
-    // Nyari produk yang ada
-    product_t produk;
-    uint8_t produk_count = 0;
-    while(fread(&produk, sizeof(product_t), 1, database_file) == 1) {
-        if (strlen(produk.nama) != 0) {
-            produk_count++;
-        }
-    }
-
-    rewind(database_file);
-
-    uint8_t height = produk_count + 6;
-
     term_clean();
     printf("================== Lihat seluruh produk ==================\n");
     printf("No | Nama Produk            | Stok | Harga\n");
 
     uint8_t i = 1;
+    product_t produk;
     while(fread(&produk, sizeof(product_t), 1, database_file) == 1){
         if (strlen(produk.nama) != 0) {
             printf("%2i | %-22s | %-4i | %-8i\n",
@@ -1963,7 +1706,6 @@ void display_admin_stock_view(){
             );
         }
     }
-    fflush(stdout);
     fclose(database_file);
     getchar();
 
@@ -2001,7 +1743,7 @@ void display_admin_stock_add() {
     printf("Apakah anda yakin? (y/N) ");
     input_string(certainty);
 
-    if (strcasecmp(certainty, "y") != 0) {
+    if (strcasecmp(certainty, "Y") != 0) {
         printf("Aksi dibatalkan!");
         getchar();
         return;
@@ -2036,9 +1778,10 @@ void display_admin_stock_add() {
         fwrite(&produk, sizeof(product_t), 1, database_file);
     }
 
+    fclose(database_file);
+
     printf("Produk berhasil terupdate!");
     getchar();
-    fclose(database_file);
 }
 
 void display_admin_stock_delete(){
@@ -2046,7 +1789,14 @@ void display_admin_stock_delete(){
     char certainty[MAX_STRLEN] = {0};
     bool found = false;
     bool is_deleted = false;
-    char temp_file[] = "database.dat.tmp";
+
+
+    FILE* database_file = fopen(STOCK_FILE, "rb");
+    if (!database_file) {
+        printf("File tidak ada!");
+        getchar();
+        return;
+    }
 
     term_clean();
 
@@ -2055,15 +1805,8 @@ void display_admin_stock_delete(){
 
     input_string(nama);
 
+    FILE* database_new = fopen(STOCK_FILE_TEMP, "wb");
     product_t produk;
-    FILE* database_file = fopen(STOCK_FILE, "rb");
-    if (!database_file) {
-        printf("File not found!");
-        getchar();
-        return;
-    }
-
-    FILE* database_new = fopen(temp_file, "wb");
     while(fread(&produk, sizeof(product_t), 1, database_file) == 1) {
         if (strcmp(produk.nama, nama) == 0) {
             found = true;
@@ -2071,7 +1814,7 @@ void display_admin_stock_delete(){
             printf("Apakah anda yakin? (y/N) ");
             input_string(certainty);
 
-            if (strcmp(certainty, "y") == 0 || strcmp(certainty, "Y") == 0) {
+            if (strcasecmp(certainty, "Y") == 0) {
                 is_deleted = true;
                 continue;
             } else {
@@ -2093,48 +1836,39 @@ void display_admin_stock_delete(){
         printf("Produk tidak ditemukan!");
         getchar();
 
-        remove(temp_file);
+        remove(STOCK_FILE_TEMP);
         return;
     }
 
     if (is_deleted) {
         remove(STOCK_FILE);
-        rename(temp_file, STOCK_FILE);
+        rename(STOCK_FILE_TEMP, STOCK_FILE);
 
         printf("Produk berhasil dihapus!");
         getchar();
     } else {
-        remove(temp_file);
+        remove(STOCK_FILE_TEMP);
     }
 }
 
 void display_admin_broker(){
     FILE* database_file = fopen(DATABASE_FILE, "rb");
 
-    // Nyari user yang ada
-    data_t user;
-    uint16_t user_count = 0;
-    while(fread(&user, sizeof(data_t), 1, database_file) == 1) {
-        if (user.type == BROKER) {
-            user_count++;
-        }
-    }
-
-    rewind(database_file);
-
     term_clean();
     printf("================== Lihat seluruh broker ==================\n");
     printf("No | Nama Broker\n");
 
+    data_t user;
     uint8_t i = 0;
+
     while(fread(&user, sizeof(data_t), 1, database_file) == 1){
         if (user.type == USER) continue;
         printf("%2i | %-s\n",
             ++i, user.username
         );
     }
-    getchar();
     fclose(database_file);
+    getchar();
 
     return;
 }
@@ -2157,6 +1891,7 @@ void display_admin_message(){
         getchar();
         return;
     }
+
     while(fread(user, sizeof(data_t), 1, database_file) == 1){
         if (strcmp(user->username, username) == 0) {
             display_pesan_start(username, BROKER);
@@ -2229,7 +1964,6 @@ bool pesan_init(){
         printf("Cannot create or open the file!");
         return false;
     }
-    end = false;
 
     return true;
 }
@@ -2243,14 +1977,18 @@ void pesan_print(){
             pesan_exist = true;
             if (current_type == BROKER){
                 if (pesan.whois == BROKER)
-                    printf("%s You: %s\n", pesan.timestamp, pesan.teks);
+                    printf("%s" 
+                           "You: %s\n", pesan.timestamp, pesan.teks);
                 else
-                    printf("%s %s: %s\n", pesan.timestamp, pesan.nama, pesan.teks);;
+                    printf("%s" 
+                           "%s: %s\n", pesan.timestamp, pesan.nama, pesan.teks);;
             } else {
                 if (pesan.whois == BROKER)
-                    printf("%s Broker : %s\n", pesan.timestamp, pesan.teks);
+                    printf("%s" 
+                           "Broker : %s\n", pesan.timestamp, pesan.teks);
                 else
-                    printf("%s You : %s\n", pesan.timestamp, pesan.teks);;
+                    printf("%s" 
+                           "You : %s\n", pesan.timestamp, pesan.teks);;
             }
         }
     }
@@ -2260,10 +1998,12 @@ void pesan_print(){
 }
 
 void pesan_kirim(const char *teks){
+    // Get the timestamp
     time_t time_raw;
     time(&time_raw);
     current_timestamp = localtime(&time_raw);
 
+    // Copy it into te file
     strncpy(pesan.teks, teks, MAX_STRLEN);
     strncpy(pesan.nama, current_user, MAX_STRLEN);
     strncpy(pesan.timestamp, asctime(current_timestamp), MAX_STRLEN);
@@ -2319,14 +2059,14 @@ bool pesan_purge(char *username){
 void pesan_end() {
     fclose(pesan_ptr);
     pesan_ptr = NULL;
-    end = true;
 }
 
 void display_pesan_start(char *nama, user_t tipe){
+    int choice;
+
     strncpy(current_user, nama, MAX_STRLEN);
     current_type = tipe;
 
-    int choice;
     if (current_type == BROKER) {
         typedef enum {
             CHAT    = 1,
@@ -2363,7 +2103,8 @@ void display_pesan_start(char *nama, user_t tipe){
                     getchar();
             }
         }
-    } else {
+    } 
+    else {
         typedef enum {
             CHAT    = 1,
             CLEAR   = 2,
@@ -2379,7 +2120,6 @@ void display_pesan_start(char *nama, user_t tipe){
             printf("Input : ");
 
             scanf("%i", &choice); getchar();
-
 
             switch (choice) {
                 case CHAT:
@@ -2399,9 +2139,9 @@ void display_pesan_start(char *nama, user_t tipe){
 }
 
 void display_pesan_message() {
-    pesan_init();
-
     char teks[256];
+
+    pesan_init();
     while (true) {
         term_clean();
         pesan_print();
@@ -2411,9 +2151,10 @@ void display_pesan_message() {
 
         input_string(teks);
 
-        if (strcmp(teks, "/exit") == 0) break;
-
-        pesan_kirim(teks);
+        if (strcmp(teks, "/exit") != 0) 
+            pesan_kirim(teks);
+        else
+            break;
     }
     pesan_end();
 }
@@ -2428,13 +2169,11 @@ void display_pesan_clear(){
 
     if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0) {
         pesan_clear();
-
         printf("Pesan berhasil dibersihkan!");
-        getchar();
     } else {
         printf("Aksi dibatalkan!");
-        getchar();
     }
+    getchar();
 }
 
 void display_pesan_purge(){
@@ -2446,16 +2185,136 @@ void display_pesan_purge(){
     input_string(choice);
 
     if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0) {
-        if (pesan_purge(current_user))
-            printf("Pesan berhasil dihapus!");
-        else
-            printf("Pesan gagal dihapus!");
+        pesan_purge(current_user);
+        printf("Pesan berhasil dihapus!");
     } else {
         printf("Aksi dibatalkan!");
     }
     getchar();
 }
 
-int main(){
-    display_utama();
+
+void input_string(char string[]) {
+    fgets(string, MAX_STRLEN, stdin);
+    string[strlen(string) - 1] = '\0';
+}
+
+void database_user_update(data_t *user){
+    FILE    *database_file = fopen(DATABASE_FILE, "rb+");
+    data_t  database_user;
+
+    // Update to file
+    while (fread(&database_user, sizeof(data_t), 1, database_file) == 1) {
+        if (strcmp(database_user.username, user->username) == 0) {
+            fseek(database_file, -sizeof(data_t), SEEK_CUR);
+            fwrite(user, sizeof(data_t), 1, database_file);
+            break;
+        }
+    }
+
+    // Save the broker data
+    fclose(database_file);
+    return;
+}
+
+void database_create(FILE *database_file){
+    database_file = fopen(DATABASE_FILE, "wb");
+    data_t broker;
+
+    // Write into the data_t struct
+    memcpy(broker.username, DEFAULT_BROKER_NAME, MAX_STRLEN);
+    memcpy(broker.password, DEFAULT_BROKER_PASSWORD, MAX_STRLEN);
+    broker.banned = false;
+
+    // Save the broker data
+    fwrite(&broker, sizeof(data_t), 1, database_file);
+    fclose(database_file);
+}
+
+void database_user_init(const char *username, const char *password, data_t *const user, const user_t type){
+
+    // Create a new user
+    strncpy(user->username, username, sizeof(user->username));
+    strncpy(user->password, password, sizeof(user->password));
+    user->banned = false;
+    user->type  = type;
+
+    // Save the user data
+    FILE* database_file = fopen(DATABASE_FILE, "ab");
+    fwrite(user, sizeof(data_t), 1, database_file);
+    fclose(database_file);
+}
+
+user_t database_user_login(const char *username, const char *password, data_t *database_user, user_t type){
+    FILE* database_file = fopen(DATABASE_FILE, "rb");
+    if (!database_file) {
+        return NONE;
+    }
+
+    bool found = false;
+    user_t user_type;
+
+    while(fread(database_user, sizeof(data_t), 1, database_file) == 1){
+        if (strcmp(username, database_user->username) == 0){
+            found = true;
+
+            // Check the password + the type of the user
+            if (strcmp(database_user->password, password) == 0){
+                if (database_user->type == type)
+                    user_type = type;
+                else
+                    user_type = database_user->type;
+                break;
+            } 
+
+            else {
+                printf("Wrong Password bleh :p\n");
+                user_type = NONE;
+                break;
+            }
+        }
+    }
+
+    if (!found){
+        printf("User tidak ditemukan! :p\n");
+        user_type = NONE;
+    }
+
+    fclose(database_file);
+    return user_type;
+}
+
+bool database_user_signup( const char *username, const char *password,
+                                   data_t *database_user, user_t type){
+    // If the user input blank
+    if (strlen(username) == 0){
+        printf("Username cannot be blank!\n");
+        return false;
+    } else if (strlen(password) == 0){
+        printf("Password cannot be blank!\n");
+        return false;
+    }
+
+    // Check whether the data exist or not yet
+    FILE* database_file = fopen(DATABASE_FILE, "rb+");
+    if (!database_file){
+        database_create(database_file);
+        database_file = fopen(DATABASE_FILE, "rb+");
+    }
+
+    // Check whether the username is already registered
+    bool found = false;
+    while(fread(database_user, sizeof(data_t), 1, database_file) == 1){
+        if (strcmp(username, database_user->username) == 0){
+            found = true;
+            break;
+        }
+    }
+    fclose(database_file);
+
+    if (found){
+        printf("Username already exist!\n");
+        return false;
+    } else
+        return true;
 }
