@@ -104,19 +104,18 @@ void display_admin_message();
 void display_admin_feedback();
 
 void display_user_start();
-void display_user_init(data_t *user);
 void display_user_login();
 void display_user_register();
+void display_user_init(data_t *user);
 void display_user_menu();
 void display_user_profile();
 void display_user_status();
+void display_user_stok();
+void display_user_stok_cari();
+void display_user_stok_beli();
+void display_user_stok_view();
+void display_user_stok_view_product(int choice);
 void display_user_feedback();
-
-void display_stok_start();
-void display_stok_cari();
-void display_stok_beli();
-void display_stok_view();
-void display_stok_view_product(int choice);
 
 void sort_nama(product_t *items, int jmlh_brang);
 void sort_harga(product_t *items, int jmlh_brang);
@@ -133,7 +132,6 @@ void pesan_print();
 void pesan_end();
 bool pesan_clear();
 bool pesan_purge(char *username);
-void *pesan_update();
 
 void    input_string(char string[]);
 
@@ -332,7 +330,7 @@ void display_user_menu() {
                 display_user_status();
                 break;
             case M_TAMBAH:
-                display_stok_start();
+                display_user_stok();
                 break;
             case M_PESAN:
                 display_pesan_start(current_user, USER);
@@ -495,7 +493,7 @@ void display_user_feedback(){
     return;
 }
 
-void display_stok_start(){
+void display_user_stok(){
     typedef enum {
         M_LIHAT     = 1,
         M_CARI      = 2,
@@ -518,13 +516,13 @@ void display_stok_start(){
 
         switch(choice) {
             case M_LIHAT:
-                display_stok_view();
+                display_user_stok_view();
                 break;
             case M_CARI:
-                display_stok_cari();
+                display_user_stok_cari();
                 break;
             case M_BELI:
-                display_stok_beli();
+                display_user_stok_beli();
                 break;
             case M_KELUAR:
                 return;
@@ -536,7 +534,7 @@ void display_stok_start(){
     }
 }
 
-void display_stok_view(){
+void display_user_stok_view(){
     typedef enum {
         M_NAMA      = 1,
         M_JUMLAH    = 2,
@@ -561,7 +559,7 @@ void display_stok_view(){
             case M_NAMA:
             case M_JUMLAH:
             case M_HARGA:
-                display_stok_view_product(choice);
+                display_user_stok_view_product(choice);
                 break;
             case M_KELUAR:
                 return;
@@ -573,7 +571,7 @@ void display_stok_view(){
     }
 }
 
-void display_stok_view_product(int choice){
+void display_user_stok_view_product(int choice){
     term_clean();
 
     FILE* database_file = fopen(STOCK_FILE, "rb");
@@ -692,7 +690,7 @@ void sort_jumlah(product_t *items, int jmlh_brang) {
     }
 }
 
-void display_stok_cari(){
+void display_user_stok_cari(){
     term_clean();
 
     char nama[MAX_STRLEN];
@@ -739,8 +737,8 @@ void display_stok_cari(){
     return;
 }
 
-void display_stok_beli() {
-    display_stok_view_product(1);
+void display_user_stok_beli() {
+    display_user_stok_view_product(1);
     term_clean();
 
     char nama[MAX_STRLEN] = {0};
